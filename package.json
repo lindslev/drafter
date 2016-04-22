@@ -1,0 +1,21 @@
+{
+  "name": "drafter",
+  "version": "0.1.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "start": "nodemon server.js --exec babel-node --presets es2015,stage-2",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Gem",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-cli": "^6.7.7",
+    "babel-preset-es2015": "^6.6.0",
+    "babel-preset-stage-2": "^6.5.0",
+    "nodemon": "^1.9.1"
+  },
+  "dependencies": {
+    "express": "^4.13.4"
+  }
+}
