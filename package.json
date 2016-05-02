@@ -5,20 +5,36 @@
   "main": "server.js",
   "scripts": {
     "start": "nodemon server.js --exec babel-node --presets es2015,stage-2",
+    "start-client": "gulp webpack:dev --dev",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Gem",
   "license": "ISC",
   "devDependencies": {
+    "autoprefixer": "^6.3.6",
     "babel-cli": "^6.7.7",
+    "babel-core": "^6.7.7",
+    "babel-loader": "^6.2.4",
     "babel-preset-es2015": "^6.6.0",
+    "babel-preset-react": "^6.5.0",
     "babel-preset-stage-2": "^6.5.0",
-    "nodemon": "^1.9.1"
+    "cssnano": "^3.5.2",
+    "del": "^2.2.0",
+    "gulp": "^3.9.1",
+    "gulp-postcss": "^6.1.0",
+    "gulp-sass": "^2.3.1",
+    "gulp-sourcemaps": "^2.0.0-alpha",
+    "nodemon": "^1.9.1",
+    "webpack-dev-server": "^1.14.1",
+    "yargs": "^4.6.0"
   },
   "dependencies": {
     "express": "^4.13.4",
     "pg": "^4.5.3",
     "pg-hstore": "^2.3.2",
-    "sequelize": "^3.21.0"
+    "react": "^15.0.1",
+    "react-dom": "^15.0.1",
+    "sequelize": "^3.21.0",
+    "webpack": "^1.13.0"
   }
 }
