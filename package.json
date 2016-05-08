@@ -31,6 +31,7 @@
   "dependencies": {
     "express": "^4.13.4",
     "google-sheets-node-api": "^0.3.0",
+    "lodash": "^4.11.2",
     "pg": "^4.5.3",
     "pg-hstore": "^2.3.2",
     "react": "^15.0.1",

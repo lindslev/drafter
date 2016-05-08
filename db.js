@@ -1,5 +1,6 @@
 import Sequelize from 'sequelize';
 import GS from 'google-sheets-node-api';
+import { shuffle } from 'lodash';
 
 const sequelize = new Sequelize('postgres://localhost:5432/drafter');
 
@@ -24,7 +25,7 @@ const Draft = sequelize.define('draft', {
     allowNull: true
   },
   current_nomination: {
-    type: Sequelize.UUID,
+    type: Sequelize.INTEGER,
     allowNull: true
   },
   season_number: {
@@ -36,6 +37,8 @@ const Draft = sequelize.define('draft', {
 
 const Team = sequelize.define('team', {
   captain: Sequelize.STRING,
+  captain_is_npc: Sequelize.BOOLEAN,
+  preliminary_pick: Sequelize.STRING,
   name: Sequelize.STRING,
   tag_coins: Sequelize.INTEGER,
   keeper_coins: Sequelize.INTEGER
@@ -45,8 +48,8 @@ const History = sequelize.define('history', {
   action_type: Sequelize.ENUM('nomination', 'bid', 'win', 'edit'),
   payload: Sequelize.JSON,
   timestamp: Sequelize.DATE,
-  actor: Sequelize.UUID,
-  draft: Sequelize.UUID
+  actor: Sequelize.INTEGER,
+  draft: Sequelize.INTEGER
 });
 
 const Player = sequelize.define('player', {
@@ -68,10 +71,10 @@ const Player = sequelize.define('player', {
 });
 
 const Nomination = sequelize.define('nomination', {
-  team: Sequelize.UUID,
+  team: Sequelize.INTEGER,
   is_done: Sequelize.BOOLEAN,
   start_time: Sequelize.DATE,
-  player: Sequelize.UUID,
+  player: Sequelize.INTEGER,
   pick_number: Sequelize.INTEGER
 });
 
@@ -87,21 +90,7 @@ Draft.hasMany(Nomination);
 // Player.belongsToMany
 // Team.hasMany(Player, { foreignKey: 'current_bid_team' });
 
-export function createTablesInDB() {
-  Draft.findAll({ where: { id: 1 }}).catch(() => {
-    Draft.sync({ force: true }).then(() => {
-      return Team.sync({ force: true });
-    }).then(() => {
-      return Player.sync({ force: true });
-    });
-    History.sync({ force: true });
-    Nomination.sync({ force: true });
-  });
-  // importSignups();
-  createDraft(10);
-}
-
-const teamArray = [ { teamName: 'qak15', captainName: 'name15' },
+const teamArray = [ { teamName: 'Ballchimedes', captainName: 'name15', isNPC: true, prelimaryPick: 'MrGone' },
   { teamName: 'qak14', captainName: 'name14' },
   { teamName: 'qak13', captainName: 'name13' },
   { teamName: 'qak12', captainName: 'name12' },
@@ -118,21 +107,42 @@ const teamArray = [ { teamName: 'qak15', captainName: 'name15' },
   { teamName: 'qak1', captainName: 'name1' },
   { teamName: 'Base Gods', captainName: 'name0' } ];
 
-function createDraft(seasonNumber) {
+
+export function createTablesInDB() {
+  Draft.findAll({ where: { id: 1 }}).catch(() => {
+    Draft.sync({ force: true }).then(() => {
+      return Team.sync({ force: true });
+    }).then(() => {
+      return Player.sync({ force: true });
+    }).then(() => {
+      return Nomination.sync({ force: true });
+    });
+    History.sync({ force: true });
+  });
+  const signups = '1tXHrJnO8vebqN8AY6sGoJt19VUSB36Tao8hK4QOfOS0';
+  const keepers = '1JX2f6lwMTXwwhegqR16fygh5ipbmsTDbwQWngsBAgwQ';
+  createDraft(10, teamArray, 100, 10, signups, keepers, 1000, 3, null);
+}
+
+function createDraft(seasonNumber, teams, tagCoins, keeperCoins, signupSheet, legacySheet, numSignups, draftRounds, manualDraftOrder) {
+  let draftId;
   Draft.create({
     season_number: seasonNumber
   }).then((draft) => {
-    return addTeamsToDraft(teamArray, seasonNumber, 100, 10, draft.id);
+    draftId = draft.id;
+    return addTeamsToDraft(teams, seasonNumber, tagCoins, keeperCoins, legacySheet, draftId);
   }).then(() => {
-    return importSignups('id', 1000, 'otherid', seasonNumber);
+    return importSignups(signupSheet, numSignups, legacySheet, seasonNumber);
+  }).then(() => {
+    const randomize = !(!!manualDraftOrder);
+    return createNominationOrder(randomize, manualDraftOrder, draftId, draftRounds);
   }).catch((err) => {
     console.error(err);
   });
 }
 
-function addTeamsToDraft(teams, seasonNumber, tagCoinsPerTeam, keeperCoinsForLegacy, draftId) {
-  const keepers = '1JX2f6lwMTXwwhegqR16fygh5ipbmsTDbwQWngsBAgwQ';
-  const keeperDoc = new GS(keepers);
+function addTeamsToDraft(teams, seasonNumber, tagCoinsPerTeam, keeperCoinsForLegacy, legacySheet, draftId) {
+  const keeperDoc = new GS(legacySheet);
 
   return keeperDoc.getSpreadsheet()
     .then((info) => {
@@ -145,10 +155,12 @@ function addTeamsToDraft(teams, seasonNumber, tagCoinsPerTeam, keeperCoinsForLeg
       const promises = teamArray.map((team) => {
         Team.create({
           captain: team.captainName,
+          captain_is_npc: team.isNPC,
+          preliminary_pick: team.preliminaryPick,
           name: team.teamName,
           tag_coins: tagCoinsPerTeam,
           keeper_coins: isLegacyTeam(keepers, team.teamName) ? keeperCoinsForLegacy : 0,
-          draft: draftId
+          draftId: draftId
         });
       });
       return Promise.all(promises);
@@ -177,14 +189,12 @@ function findKeeperTeam(keepers, player, seasonNumber) {
 }
 
 function importSignups(signupSheetId, numSignups, keeperSheetId, seasonNumber) {
-  const signups = '1tXHrJnO8vebqN8AY6sGoJt19VUSB36Tao8hK4QOfOS0';
-  const keeperId = '1JX2f6lwMTXwwhegqR16fygh5ipbmsTDbwQWngsBAgwQ';
-  const signupDoc = new GS(signups);
-  const keeperDoc = new GS(keeperId);
+  const signupDoc = new GS(signupSheetId);
+  const keeperDoc = new GS(keeperSheetId);
 
   let keepers;
 
-  keeperDoc.getSpreadsheet()
+  return keeperDoc.getSpreadsheet()
     .then((info) => {
       return info.worksheets[0].getRows({ offset: 1, limit: 5000, orderby: 'col1' });
     }).then((keeperData) => {
@@ -193,7 +203,7 @@ function importSignups(signupSheetId, numSignups, keeperSheetId, seasonNumber) {
     }).then((info) => {
       return info.worksheets[0].getRows({ offset: 0, limit: 100, orderby: 'col1' });
     }).then((signups) => {
-      const promises = signups.map((player) => {
+      const playerPromises = signups.map((player) => {
         let playerTeamId;
         const keeperTeamName = findKeeperTeam(keepers, player, seasonNumber);
         const isEligibleKeeper = !!keeperTeamName;
@@ -211,7 +221,28 @@ function importSignups(signupSheetId, numSignups, keeperSheetId, seasonNumber) {
           });
         });
       });
-    }).catch((err) => {
-      console.error(err);
+      return Promise.all(playerPromises);
     });
+}
+
+function createNominationOrder(randomize, manualOrder, draftId, draftRounds) {
+  return Team.findAll({ where: { draftId }}).then((teams) => {
+    const nominationOrder = randomize ? shuffle(teams) : manualOrder;
+    let rounds = draftRounds > 0 && draftRounds < 10 ? draftRounds : 1;
+    const nominationPromises = [];
+    let pickNumberTracker = 0;
+    while ( rounds-- ) {
+      nominationOrder.forEach((t, i) => {
+        nominationPromises.push(Nomination.create({
+          team: t.id,
+          is_done: false,
+          player: null,
+          pick_number: i +  1 + pickNumberTracker,
+          draftId: draftId
+        }));
+      });
+      pickNumberTracker += teams.length;
+    }
+    return Promise.all(nominationPromises);
+  });
 }
