@@ -6,16 +6,51 @@ import { bindActionCreators } from 'redux';
 import * as draftActions from '../redux/modules/draft';
 
 class AdminView extends React.Component {
-  componentWillMount() {
-    const { loadTeams } = this.props.draftActions;
-    loadTeams();
+  constructor(props) {
+    super(props);
+    this.createDraft = this.createDraft.bind(this);
+  }
+
+  createDraft() {
+    const teams = [ { teamName: 'name1', captainName: 'player1', isNPC: false, preliminaryPick: null },
+  { teamName: 'name1', captainName: 'player1', isNPC: false, preliminaryPick: null },
+  { teamName: 'name1', captainName: 'player1', isNPC: false, preliminaryPick: null },
+  { teamName: 'name1', captainName: 'player1', isNPC: false, preliminaryPick: null },
+  { teamName: 'name1', captainName: 'player1', isNPC: false, preliminaryPick: null },
+  { teamName: 'name1', captainName: 'player1', isNPC: false, preliminaryPick: null },
+  { teamName: 'name1', captainName: 'player1', isNPC: false, preliminaryPick: null },
+  { teamName: 'name1', captainName: 'player1', isNPC: false, preliminaryPick: null },
+  { teamName: 'name1', captainName: 'player1', isNPC: false, preliminaryPick: null },
+  { teamName: 'name1', captainName: 'player1', isNPC: false, preliminaryPick: null },
+  { teamName: 'name1', captainName: 'player1', isNPC: false, preliminaryPick: null },
+  { teamName: 'name1', captainName: 'player1', isNPC: false, preliminaryPick: null },
+  { teamName: 'name1', captainName: 'player1', isNPC: false, preliminaryPick: null },
+  { teamName: 'name1', captainName: 'player1', isNPC: false, preliminaryPick: null },
+  { teamName: 'name1', captainName: 'player1', isNPC: false, preliminaryPick: null },
+  { teamName: 'name1', captainName: 'player1', isNPC: false, preliminaryPick: null } ];
+    const signups = '1tXHrJnO8vebqN8AY6sGoJt19VUSB36Tao8hK4QOfOS0';
+    const keepers = '1JX2f6lwMTXwwhegqR16fygh5ipbmsTDbwQWngsBAgwQ';
+    const { createDraft } = this.props.draftActions;
+    const draft = {
+      seasonNumber: 10,
+      teams,
+      tagCoins: 100,
+      keeperCoins: 10,
+      signupSheet: signups,
+      legacySheet: keepers,
+      numSignups: 1000,
+      draftRounds: 3,
+      manualDraftOrder: null
+    };
+    createDraft(draft)
+      .then(() => window.alert('kappa'))
+      .catch(() => window.alert('qakka'));
   }
 
   render() {
-    console.log('props', this.props);
     return (
       <div>
-        <p>dis where we gonna let admins do stuff WOO</p>
+        <button onClick={this.createDraft}>CREATE</button>
       </div>
     );
   }

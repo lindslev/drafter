@@ -7,10 +7,6 @@ import createStore from './redux/create';
 const socket = io();
 
 class App extends React.Component {
-  componentDidMount() {
-    this.props.draftActions.loadTeams();
-  }
-
   render() {
     return (
       <div>

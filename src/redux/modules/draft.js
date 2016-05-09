@@ -1,36 +1,41 @@
 import { assign, identity } from 'lodash';
 import { handlePromiseAction } from '../utils';
 
-export const LOAD_TEAMS = 'LOAD_TEAMS';
+export const CREATE_DRAFT = 'CREATE_DRAFT';
+export const SET_PROPERTY = 'SET_PROPERTY';
 
-const handleLoadTeams = handlePromiseAction(
-  identity,
-  (state, { payload }) => {
-    return assign({}, state, { teams: payload });
-  }
-);
+function handleSetDraftProperty(state, action) {
+  return assign({}, state, action.payload);
+}
 
 const initialState = {
-  teams: []
+  teams: [],
+  manualDraftOrder: null,
+  draftRounds: null,
+  seasonNumber: null
 };
 
 export default function reducer(state = initialState, action = {}) {
   switch (action.type) {
-  case LOAD_TEAMS:
-    return handleLoadTeams(state, action);
   default:
     return state;
   }
 }
 
-export function loadTeams(seasonNumber) {
+export function createDraft(draft) {
   return {
-    type: LOAD_TEAMS,
+    type: CREATE_DRAFT,
     payload: {
       futureAPIPayload(apiClient) {
-        return apiClient.getTest();
+        return apiClient.createDraft(draft);
       }
     }
   };
 }
 
+export function setDraftProperty(property, value) {
+  return {
+    type: SET_PROPERTY,
+    payload: { [property]: value }
+  };
+}

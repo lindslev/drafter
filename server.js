@@ -15,17 +15,11 @@ createTablesInDB();
 import socketio from 'socket.io';
 const io = socketio.listen(app.listen(process.env.PORT || 3000));
 io.on('connection', () => {
-  console.log('u wot m8');
+  console.log('A user connected.');
 });
 
-export const exports = {
-  app,
-  socket: io.sockets
-};
-
-app.get('/api/test', (req, res) => {
-  res.json({ top: 'qak' });
-});
+import { addRoutes } from './routes';
+addRoutes(app);
 
 app.get('*', (req, res) => {
   res.sendFile('index.html', { root: __dirname });

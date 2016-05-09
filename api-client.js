@@ -42,6 +42,8 @@ function parseError(request) {
     .catch(({ res }) => Promise.reject(camelizeKeys(JSON.parse(res.text))));
 }
 
-export function getTest() {
-  return camelizeResponse(parseError(get(`api/test`)));
+export function createDraft(draft) {
+  return post(`api/draft`, {
+    data: draft
+  });
 }

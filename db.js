@@ -91,24 +91,6 @@ Draft.hasMany(Nomination);
 // Player.belongsToMany
 // Team.hasMany(Player, { foreignKey: 'current_bid_team' });
 
-const teamArray = [ { teamName: 'Ballchimedes', captainName: 'name15', isNPC: true, prelimaryPick: 'MrGone' },
-  { teamName: 'qak14', captainName: 'name14' },
-  { teamName: 'qak13', captainName: 'name13' },
-  { teamName: 'qak12', captainName: 'name12' },
-  { teamName: 'qak11', captainName: 'name11' },
-  { teamName: 'qak10', captainName: 'name10' },
-  { teamName: 'qak9', captainName: 'name9' },
-  { teamName: 'qak8', captainName: 'name8' },
-  { teamName: 'qak7', captainName: 'name7' },
-  { teamName: 'qak6', captainName: 'name6' },
-  { teamName: 'qak5', captainName: 'name5' },
-  { teamName: 'qak4', captainName: 'name4' },
-  { teamName: 'qak3', captainName: 'name3' },
-  { teamName: 'qak2', captainName: 'name2' },
-  { teamName: 'qak1', captainName: 'name1' },
-  { teamName: 'Base Gods', captainName: 'name0' } ];
-
-
 export function createTablesInDB() {
   Draft.findAll({ where: { id: 1 }}).catch(() => {
     Draft.sync({ force: true }).then(() => {
@@ -120,14 +102,11 @@ export function createTablesInDB() {
     });
     History.sync({ force: true });
   });
-  const signups = '1tXHrJnO8vebqN8AY6sGoJt19VUSB36Tao8hK4QOfOS0';
-  const keepers = '1JX2f6lwMTXwwhegqR16fygh5ipbmsTDbwQWngsBAgwQ';
-  createDraft(10, teamArray, 100, 10, signups, keepers, 1000, 3, null);
 }
 
-function createDraft(seasonNumber, teams, tagCoins, keeperCoins, signupSheet, legacySheet, numSignups, draftRounds, manualDraftOrder) {
+export function createDraft(seasonNumber, teams, tagCoins, keeperCoins, signupSheet, legacySheet, numSignups, draftRounds, manualDraftOrder) {
   let draftId;
-  Draft.create({
+  return Draft.create({
     season_number: seasonNumber
   }).then((draft) => {
     draftId = draft.id;
@@ -153,7 +132,8 @@ function addTeamsToDraft(teams, seasonNumber, tagCoinsPerTeam, keeperCoinsForLeg
         orderby: 'col1'
       });
     }).then((keepers) => {
-      const promises = teamArray.map((team) => {
+      // might want captain name to be a player id instead of a string
+      const promises = teams.map((team) => {
         Team.create({
           captain: team.captainName,
           captain_is_npc: team.isNPC,
