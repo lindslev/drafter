@@ -2,7 +2,7 @@ import path from 'path';
 
 module.exports = {
   entry: {
-    app: ['./src/app.jsx']
+    app: ['./src/app.js']
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
@@ -12,7 +12,7 @@ module.exports = {
   module: {
     loaders: [
       {
-        test: /\.jsx?$/,
+        test: /\.js?$/,
         exclude: /(node_modules)/,
         loader: 'babel',
         query: {

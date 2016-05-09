@@ -32,7 +32,8 @@ const Draft = sequelize.define('draft', {
     type: Sequelize.INTEGER,
     unique: true,
     allowNull: false
-  }
+  },
+  private: Sequelize.BOOLEAN
 });
 
 const Team = sequelize.define('team', {

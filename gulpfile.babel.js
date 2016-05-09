@@ -1,9 +1,5 @@
 import gulp from 'gulp';
-// import debug from 'gulp-debug';
 import sourcemaps from 'gulp-sourcemaps';
-// import rev from 'gulp-rev';
-// import awspublish from 'gulp-awspublish';
-// import notify from 'gulp-notify';
 import { argv } from 'yargs';
 import del from 'del';
 import webpack from 'webpack';
@@ -43,22 +39,22 @@ gulp.task('watch-css', () => {
 });
 
 gulp.task('webpack:dev', (cb) => {
-    var myConfig = Object.create(WebpackConfig);
+    const myConfig = Object.create(WebpackConfig);
     myConfig.devtool = "eval";
     myConfig.debug = true;
     myConfig.entry.app.unshift('webpack-dev-server/client?http://localhost:8080/');
     const compiler = webpack(myConfig);
 
-    new WebpackDevServer(compiler, {
+    const server = new WebpackDevServer(compiler, {
         publicPath: myConfig.output.publicPath,
         stats: { colors: true }
       }).listen(8080, 'localhost', function(err) {
-        cb();
-      });
+      cb();
+    });
   });
 
 gulp.task('webpack:build-prod', (cb) => {
-  var myConfig = Object.create(WebpackConfig);
+  const myConfig = Object.create(WebpackConfig);
   myConfig.plugins = myConfig.plugins.concat(
     new webpack.DefinePlugin({
       'process.env': {
@@ -75,33 +71,16 @@ gulp.task('webpack:build-prod', (cb) => {
 });
 
 gulp.task('webpack:build-dev', (cb) => {
-  var myDevConfig = Object.create(WebpackConfig);
+  const myDevConfig = Object.create(WebpackConfig);
   myDevConfig.devtool = "sourcemap";
   myDevConfig.debug = true;
 
-
-  // const plugins = [new webpack.optimize.UglifyJsPlugin({
-  //     sourceMap: false,
-  //     compress: {
-  //       warnings: false
-  //     }
-  //   })];
-
-  var devCompiler = webpack(myDevConfig);
+  const devCompiler = webpack(myDevConfig);
 
   devCompiler.run(function(err, stats) {
     cb();
   });
 });
 
-  // gulp.task('file-rev', ['css', 'webpack'], () => (
-  //   gulp.src('./dist#<{(||)}>#*.{js,css}')
-  //     .pipe(rev())
-  //     .pipe(debug())
-  //     .pipe(gulp.dest('build'))
-  //     .pipe(rev.manifest())
-  //     .pipe(gulp.dest('build'))
-  // ));
-
-gulp.task('dev', ['webpack:dev']);
+gulp.task('dev', ['webpack:build-dev', 'rebuild-css']);
 gulp.task('build', ['copy', 'css', 'webpack:build-prod', 'watch-css']);

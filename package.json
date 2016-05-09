@@ -29,14 +29,25 @@
     "yargs": "^4.6.0"
   },
   "dependencies": {
+    "body-parser": "^1.15.1",
+    "cors": "^2.7.1",
     "express": "^4.13.4",
     "google-sheets-node-api": "^0.3.0",
+    "history": "^2.1.1",
+    "http-proxy": "^1.13.2",
+    "humps": "^1.1.0",
     "lodash": "^4.11.2",
     "pg": "^4.5.3",
     "pg-hstore": "^2.3.2",
     "react": "^15.0.1",
     "react-dom": "^15.0.1",
+    "react-redux": "^4.4.5",
+    "react-router": "^2.4.0",
+    "redux": "^3.5.2",
+    "redux-thunk": "^2.0.1",
     "sequelize": "^3.21.0",
+    "socket.io": "^1.4.6",
+    "superagent": "^1.8.3",
     "webpack": "^1.13.0"
   }
 }
