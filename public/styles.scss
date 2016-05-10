@@ -1,3 +1,90 @@
+/* constants */
+$shadow-color: #8C8C8C;
+$dark-blue: #00006F;
+$dark-gray: #8A8A8A;
+$button-hover: #7479B3;
+
 body {
-  color: blue;
+  margin: 0;
+  font-family: Work Sans;
 }
+
+.header {
+  background: $dark-blue;
+  color: white;
+  box-shadow: 1px 1px 20px $shadow-color;
+  height: 60px;
+  width: 100%;
+  top: 0;
+  .header-title {
+    float: left;
+    margin-left: 30px;
+  }
+  .header-right {
+    float: right;
+    margin-right: 30px;
+  }
+}
+
+.view-title {
+  font-size: 30px;
+}
+
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+
+.draft-create-view {
+  padding: 20px 70px;
+
+  .side-note {
+    font-size: 11px;
+  }
+
+  input {
+    border: none;
+    border-bottom: 2px solid $dark-blue;
+    font-size: 15px;
+    &:focus {
+      outline: none;
+    }
+  }
+
+  input[type=number] {
+    width: 35px;
+  }
+
+  input[type=text] {
+    width: 500px;
+  }
+  
+  .add-teams {
+    margin-top: 10px;
+    font-size: 14px;
+    padding: 4px 30px;
+    background: $dark-gray;
+  }
+
+  .create-draft-button {
+    margin-top: 10px;
+    display: block;
+  }
+}
+
+button {
+  font-family: Work Sans;
+  border-radius: 0;
+  border: none;
+  background: $dark-blue;
+  color: white;
+  padding: 10px 20px;
+  font-size: 18px;
+  cursor: pointer;
+  &:hover {
+    background: $button-hover;
+  }
+}
+
+

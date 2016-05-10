@@ -46,9 +46,9 @@ gulp.task('webpack:dev', (cb) => {
     const compiler = webpack(myConfig);
 
     const server = new WebpackDevServer(compiler, {
-        publicPath: myConfig.output.publicPath,
-        stats: { colors: true }
-      }).listen(8080, 'localhost', function(err) {
+      publicPath: myConfig.output.publicPath,
+      stats: { colors: true }
+    }).listen(8080, 'localhost', function(err) {
       cb();
     });
   });
@@ -78,6 +78,7 @@ gulp.task('webpack:build-dev', (cb) => {
   const devCompiler = webpack(myDevConfig);
 
   devCompiler.run(function(err, stats) {
+    console.log(err);
     cb();
   });
 });

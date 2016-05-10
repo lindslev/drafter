@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon server.js --exec babel-node --presets es2015,stage-2",
+    "start": "nodemon server.js --watch server.js --exec babel-node --presets es2015,stage-2",
     "start-client": "gulp webpack:dev --dev",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

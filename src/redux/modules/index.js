@@ -1,7 +1,11 @@
 import { combineReducers } from 'redux';
 
-import draft from './draft';
+import createDraft from './create';
+import editDraft from './edit';
+import runDraft from './run';
 
 export default combineReducers({
-  draft
+  createDraft,
+  editDraft,
+  runDraft
 });

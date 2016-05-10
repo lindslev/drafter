@@ -40,6 +40,7 @@ const Team = sequelize.define('team', {
   captain: Sequelize.STRING,
   captain_is_npc: Sequelize.BOOLEAN,
   preliminary_pick: Sequelize.STRING,
+  division: Sequelize.STRING,
   name: Sequelize.STRING,
   tag_coins: Sequelize.INTEGER,
   keeper_coins: Sequelize.INTEGER
@@ -116,8 +117,8 @@ export function createDraft(seasonNumber, teams, tagCoins, keeperCoins, signupSh
   }).then(() => {
     const randomize = !(!!manualDraftOrder);
     return createNominationOrder(randomize, manualDraftOrder, draftId, draftRounds);
-  }).catch((err) => {
-    console.error(err);
+  }).then(() => {
+    return draftId;
   });
 }
 
@@ -138,6 +139,7 @@ function addTeamsToDraft(teams, seasonNumber, tagCoinsPerTeam, keeperCoinsForLeg
           captain: team.captainName,
           captain_is_npc: team.isNPC,
           preliminary_pick: team.preliminaryPick,
+          division: team.division,
           name: team.teamName,
           tag_coins: tagCoinsPerTeam,
           keeper_coins: isLegacyTeam(keepers, team.teamName) ? keeperCoinsForLegacy : 0,
@@ -226,4 +228,22 @@ function createNominationOrder(randomize, manualOrder, draftId, draftRounds) {
     }
     return Promise.all(nominationPromises);
   });
+}
+
+export function loadDraft(id) {
+  let teams, draft, nominations, players;
+  return Draft.findOne({ where: { id }})
+    .then((d) => {
+      draft = d;
+      return Team.findAll({ where: { draftId: id }});
+    }).then((t) => {
+      teams = t;
+      return Player.findAll({ where: { draftId: id }});
+    }).then((p) => {
+      players = p;
+      return Nomination.findAll({ where: { draftId: id }});
+    }).then((n) => {
+      nominations = n;
+      return { teams, draft, nominations, players };
+    });
 }

@@ -43,7 +43,13 @@ function parseError(request) {
 }
 
 export function createDraft(draft) {
-  return post(`api/draft`, {
+  return post(`/api/draft`, {
     data: draft
+  });
+}
+
+export function loadDraft(id) {
+  return get(`/api/draft`, {
+    params: { id }
   });
 }

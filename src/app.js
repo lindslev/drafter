@@ -6,10 +6,13 @@ import createStore from './redux/create';
 
 const socket = io();
 
+import Header from './components/header';
+
 class App extends React.Component {
   render() {
     return (
       <div>
+        <Header />
         {this.props.children}
       </div>
     );
@@ -18,14 +21,20 @@ class App extends React.Component {
 
 const store = createStore({});
 
-import AdminView from './components/admin';
+import Page from './components/page';
+import AdminCreateView from './components/admin.create';
+import AdminEditView from './components/admin.edit';
+import DraftView from './components/draft.view';
 
 const APP = (
   <Provider store={store}>
     <Router history={browserHistory}>
       <Route path='/' component={App}>
-        <IndexRoute component={AdminView} />
-        <Route path='admin' component={AdminView} />
+        <IndexRoute component={DraftView} />
+        <Route path='admin' component={Page}>
+          <Route path='create' component={AdminCreateView} /> 
+          <Route path='edit/:id' component={AdminEditView} /> 
+        </Route>
       </Route>
     </Router>
   </Provider>

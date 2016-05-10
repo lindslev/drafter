@@ -9,14 +9,21 @@ function handleSetDraftProperty(state, action) {
 }
 
 const initialState = {
-  teams: [],
+  teams: null,
   manualDraftOrder: null,
   draftRounds: null,
-  seasonNumber: null
+  seasonNumber: null,
+  signupSheet: null,
+  legacySheet: null,
+  numSignups: null,
+  tagCoins: null,
+  keeperCoins: null
 };
 
 export default function reducer(state = initialState, action = {}) {
   switch (action.type) {
+  case SET_PROPERTY:
+    return handleSetDraftProperty(state, action);
   default:
     return state;
   }
