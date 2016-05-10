@@ -1,5 +1,7 @@
 import express from 'express';
+import cookieParser from 'cookie-parser';
 import bodyParser from 'body-parser';
+import expressSession from 'express-session';
 import cors from 'cors';
 import path from 'path';
 
@@ -8,9 +10,16 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
 app.use(express.static(path.normalize(__dirname + '/dist')));
+app.use(cookieParser());
+app.use(expressSession({ secret: 'meowmeow' }));
 
 import { createTablesInDB } from './db';
 createTablesInDB();
+
+import passport from 'passport';
+import './login';
+app.use(passport.initialize());
+app.use(passport.session());
 
 import socketio from 'socket.io';
 const io = socketio.listen(app.listen(process.env.PORT || 3000));

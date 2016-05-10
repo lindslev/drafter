@@ -2,6 +2,9 @@ import Sequelize from 'sequelize';
 import GS from 'google-sheets-node-api';
 import { shuffle } from 'lodash';
 
+import crypto from 'crypto';
+const secret = 'unclerix';
+
 const sequelize = new Sequelize('postgres://localhost:5432/drafter');
 
 const Draft = sequelize.define('draft', {
@@ -83,7 +86,8 @@ const Nomination = sequelize.define('nomination', {
 const User = sequelize.define('user', {
   username: Sequelize.STRING,
   password: Sequelize.STRING,
-  is_admin: Sequelize.BOOLEAN
+  is_admin: Sequelize.BOOLEAN,
+  is_captain: Sequelize.BOOLEAN
 });
 
 Draft.hasMany(Player);
@@ -102,6 +106,7 @@ export function createTablesInDB() {
       return Nomination.sync({ force: true });
     });
     History.sync({ force: true });
+    User.sync({ force: true });
   });
 }
 
@@ -245,5 +250,22 @@ export function loadDraft(id) {
     }).then((n) => {
       nominations = n;
       return { teams, draft, nominations, players };
+    });
+}
+
+export function createUser(username, password) {
+  const hashedPW = crypto.createHmac('sha256', secret)
+                   .update(password)
+                   .digest('hex');
+  return User.create({ username, password: hashedPW });
+}
+
+export function validateUser(username, password) {
+  const hashedPW = crypto.createHmac('sha256', secret)
+                   .update(password)
+                   .digest('hex');
+  return User.findOne({ where: { username }})
+    .then((user) => {
+      return user.password === hashedPW;
     });
 }

@@ -1,7 +1,9 @@
 import draft from './api/draft/draft.route';
+import login from './api/login/login.route';
 
 const routes = [
-  draft
+  draft,
+  login
 ];
 
 export function addRoutes(app) {
