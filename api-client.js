@@ -53,3 +53,15 @@ export function loadDraft(id) {
     params: { id }
   });
 }
+
+export function loginUser(username, password) {
+  return post(`/api/login`, {
+    data: { username, password }
+  });
+}
+
+export function createUser(username, password) {
+  return post(`/api/login/create`, {
+    data: { username, password }
+  });
+}

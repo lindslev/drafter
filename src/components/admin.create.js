@@ -32,7 +32,8 @@ class AdminView extends React.Component {
     const missingFields = this.checkMissingFields(draft);
     if ( !missingFields ) {
       createDraft(draft)
-        .then((draftId) => {
+        .then((draft) => {
+          const { draftId } = draft;
           window.alert('Draft created!');
           window.location = `/admin/edit/${draftId}`;
         }).catch((err) => {

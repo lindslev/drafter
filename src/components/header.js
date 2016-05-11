@@ -3,14 +3,30 @@ import React from 'react';
 class Header extends React.Component {
   constructor(props) {
     super(props);
+    this.getRightText = this.getRightText.bind(this);
+    this.loginHandler = this.loginHandler.bind(this);
+  }
+
+  isLoggedIn() {
+    const localStorage = window.localStorage || localStorage;
+    return !!localStorage.getItem('drafterUserId');
+  }
+
+  getRightText() {
+    return this.isLoggedIn() ? (window.localStorage || localStorage).getItem('drafterUsername') : 'Log In';
+  }
+
+  loginHandler() {
+    if ( !this.isLoggedIn() ) {
+      window.location = '/login';
+    }
   }
   
   render() {
-    const loggedInUser = false;
     return (
       <div className="header">
         <p className="header-title">Drafter</p>
-        <p className="header-right">{loggedInUser ? loggedInUser.username : 'Log In'}</p>
+        <p onClick={this.loginHandler} className="header-right">{this.getRightText()}</p>
       </div>
     );
   }

@@ -10,5 +10,14 @@ export function create(req, res) {
 }
 
 export function login(req, res) {
-  res.json({ message: 'ok' });
+  const { user } = req.user || {};
+  const { id, username, is_admin, is_captain, teamId } = user;
+  const userObj = {
+    id,
+    username,
+    is_admin,
+    is_captain,
+    teamId
+  };
+  res.json(userObj);
 }

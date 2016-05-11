@@ -84,7 +84,10 @@ const Nomination = sequelize.define('nomination', {
 });
 
 const User = sequelize.define('user', {
-  username: Sequelize.STRING,
+  username: {
+    type: Sequelize.STRING,
+    unique: true
+  },
   password: Sequelize.STRING,
   is_admin: Sequelize.BOOLEAN,
   is_captain: Sequelize.BOOLEAN
@@ -93,8 +96,7 @@ const User = sequelize.define('user', {
 Draft.hasMany(Player);
 Draft.hasMany(Team);
 Draft.hasMany(Nomination);
-// Player.belongsToMany
-// Team.hasMany(Player, { foreignKey: 'current_bid_team' });
+User.belongsTo(Team);
 
 export function createTablesInDB() {
   Draft.findAll({ where: { id: 1 }}).catch(() => {
@@ -104,9 +106,11 @@ export function createTablesInDB() {
       return Player.sync({ force: true });
     }).then(() => {
       return Nomination.sync({ force: true });
+    }).then(() => {
+      return History.sync({ force: true });
+    }).then(() => {
+      return User.sync({ force: true });
     });
-    History.sync({ force: true });
-    User.sync({ force: true });
   });
 }
 
@@ -118,7 +122,7 @@ export function createDraft(seasonNumber, teams, tagCoins, keeperCoins, signupSh
     draftId = draft.id;
     return addTeamsToDraft(teams, seasonNumber, tagCoins, keeperCoins, legacySheet, draftId);
   }).then(() => {
-    return importSignups(signupSheet, numSignups, legacySheet, seasonNumber);
+    return importSignups(signupSheet, numSignups, legacySheet, seasonNumber, draftId);
   }).then(() => {
     const randomize = !(!!manualDraftOrder);
     return createNominationOrder(randomize, manualDraftOrder, draftId, draftRounds);
@@ -138,7 +142,6 @@ function addTeamsToDraft(teams, seasonNumber, tagCoinsPerTeam, keeperCoinsForLeg
         orderby: 'col1'
       });
     }).then((keepers) => {
-      // might want captain name to be a player id instead of a string
       const promises = teams.map((team) => {
         Team.create({
           captain: team.captainName,
@@ -176,7 +179,7 @@ function findKeeperTeam(keepers, player, seasonNumber) {
   return teamName;
 }
 
-function importSignups(signupSheetId, numSignups, keeperSheetId, seasonNumber) {
+function importSignups(signupSheetId, numSignups, keeperSheetId, seasonNumber, draftId) {
   const signupDoc = new GS(signupSheetId);
   const keeperDoc = new GS(keeperSheetId);
 
@@ -205,7 +208,8 @@ function importSignups(signupSheetId, numSignups, keeperSheetId, seasonNumber) {
             name: player.name || player.title || player[`season${seasonNumber}name`],
             current_bid_amount: 0,
             current_bid_team: null,
-            keeper_team: playerTeamId
+            keeper_team: playerTeamId,
+            draftId: draftId
           });
         });
       });
@@ -260,12 +264,13 @@ export function createUser(username, password) {
   return User.create({ username, password: hashedPW });
 }
 
-export function validateUser(username, password) {
+export function loadUser(username, password) {
   const hashedPW = crypto.createHmac('sha256', secret)
                    .update(password)
                    .digest('hex');
   return User.findOne({ where: { username }})
     .then((user) => {
-      return user.password === hashedPW;
+      const isValid = user.password === hashedPW;
+      return { user: user.toJSON(), isValid };
     });
 }

@@ -2,14 +2,15 @@ import passport from 'passport';
 import passportLocal from 'passport-local';
 const { Strategy: LocalStrategy } = passportLocal;
 
-import { validateUser } from './db';
+import { loadUser } from './db';
 
 passport.use(new LocalStrategy(
   (username, password, done) => {
-    validateUser(username, password)
-      .then((isValid) => {
+    loadUser(username, password)
+      .then((u) => {
+        const { isValid, user } = u;
         if ( isValid ) {
-          return done(null, { username });
+          return done(null, { user });
         } else {
           return done(null, false, { message: 'Username or password is incorrect.' });
         }

@@ -9,6 +9,11 @@ body {
   font-family: Work Sans;
 }
 
+.row {
+  margin-left: 0px;
+  margin-right: 0px
+}
+
 .header {
   background: $dark-blue;
   color: white;
@@ -16,6 +21,7 @@ body {
   height: 60px;
   width: 100%;
   top: 0;
+  p { margin-top: 18px; }
   .header-title {
     float: left;
     margin-left: 30px;
@@ -23,11 +29,24 @@ body {
   .header-right {
     float: right;
     margin-right: 30px;
+    cursor: pointer;
+    &:hover {
+      color: $button-hover;
+    }
   }
 }
 
 .view-title {
   font-size: 30px;
+}
+
+input {
+  border: none;
+  border-bottom: 2px solid $dark-blue;
+  font-size: 15px;
+  &:focus {
+    outline: none;
+  }
 }
 
 input[type=number]::-webkit-inner-spin-button, 
@@ -39,17 +58,12 @@ input[type=number]::-webkit-outer-spin-button {
 .draft-create-view {
   padding: 20px 70px;
 
-  .side-note {
-    font-size: 11px;
+  p {
+    margin: 12px 0px 0px 0px;
   }
 
-  input {
-    border: none;
-    border-bottom: 2px solid $dark-blue;
-    font-size: 15px;
-    &:focus {
-      outline: none;
-    }
+  .side-note {
+    font-size: 11px;
   }
 
   input[type=number] {
@@ -87,4 +101,18 @@ button {
   }
 }
 
-
+.user-login-view {
+  padding-top: 40px;
+  .col-lg-6 {
+    p, input, button {
+      display: block;
+    }
+    p {
+      font-size: 20px;
+      text-align: center;
+    }
+    input, button {
+      margin: 10px auto;
+    }
+  }
+}

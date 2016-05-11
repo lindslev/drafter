@@ -5,8 +5,24 @@ class Page extends React.Component {
     super(props);
   }
 
+  componentWillMount() {
+    const canRenderAdminRoutes = this.checkAuthentication();
+    if ( !canRenderAdminRoutes ) {
+      window.location = '/';
+    }
+  }
+
+  checkAuthentication() {
+    const localStorage = window.localStorage || localStorage;
+    const isLoggedIn = localStorage.getItem('drafterUserId');
+    const isAdmin = localStorage.getItem('drafterUserIsAdmin') === "true";
+    const canRenderAdminRoutes = isLoggedIn && isAdmin;
+    return canRenderAdminRoutes;
+  }
+
   render() {
-    return this.props.children;
+    const canRenderAdminRoutes = this.checkAuthentication();
+    return canRenderAdminRoutes ? this.props.children : null;
   }
 }
 

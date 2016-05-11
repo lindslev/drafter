@@ -25,6 +25,7 @@ import Page from './components/page';
 import AdminCreateView from './components/admin.create';
 import AdminEditView from './components/admin.edit';
 import DraftView from './components/draft.view';
+import UserLogin from './components/user.login';
 
 const APP = (
   <Provider store={store}>
@@ -35,6 +36,7 @@ const APP = (
           <Route path='create' component={AdminCreateView} /> 
           <Route path='edit/:id' component={AdminEditView} /> 
         </Route>
+        <Route path='login' component={UserLogin} />
       </Route>
     </Router>
   </Provider>

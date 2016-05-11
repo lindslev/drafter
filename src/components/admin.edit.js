@@ -10,7 +10,7 @@ class AdminEditView extends React.Component {
   }
 
   componentDidMount() {
-    this.props.draftActions.loadDraft(1);
+    this.props.draftActions.loadDraft(this.props.routeParams.id);
   }
 
   render() {
