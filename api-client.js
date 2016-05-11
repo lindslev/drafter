@@ -65,3 +65,15 @@ export function createUser(username, password) {
     data: { username, password }
   });
 }
+
+export function updateProperty(type, prop, val, identifier) {
+  return post(`/api/draft/update`, {
+    data: { type, prop, val, identifier }
+  });
+}
+
+export function editCaptaincy(username, giveOrRemove, teamId) {
+  return post(`/api/draft/captaincy`, {
+    data: { username, giveOrRemove, teamId }
+  });
+}

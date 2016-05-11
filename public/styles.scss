@@ -116,3 +116,25 @@ button {
     }
   }
 }
+
+.draft-edit-view {
+  .col-md-4 {
+    height: 600px;
+    max-height: 600px;
+    overflow: scroll;
+    border: 1px solid $dark-blue;
+  }
+
+  .admin-player-view, .admin-team-view, .admin-nomination-view {
+    margin-top: 5px;
+    border-top: 2px solid $dark-blue;
+  }
+
+  .col-md-6 {
+    input, button {
+      display: block;
+      margin: 0 auto;
+      margin-top: 10px;
+    }
+  }
+}

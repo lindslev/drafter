@@ -76,10 +76,8 @@ const Player = sequelize.define('player', {
 });
 
 const Nomination = sequelize.define('nomination', {
-  team: Sequelize.INTEGER,
   is_done: Sequelize.BOOLEAN,
   start_time: Sequelize.DATE,
-  player: Sequelize.INTEGER,
   pick_number: Sequelize.INTEGER
 });
 
@@ -97,6 +95,8 @@ Draft.hasMany(Player);
 Draft.hasMany(Team);
 Draft.hasMany(Nomination);
 User.belongsTo(Team);
+Nomination.belongsTo(Player);
+Nomination.belongsTo(Team);
 
 export function createTablesInDB() {
   Draft.findAll({ where: { id: 1 }}).catch(() => {
@@ -226,9 +226,8 @@ function createNominationOrder(randomize, manualOrder, draftId, draftRounds) {
     while ( rounds-- ) {
       nominationOrder.forEach((t, i) => {
         nominationPromises.push(Nomination.create({
-          team: t.id,
+          teamId: t.id,
           is_done: false,
-          player: null,
           pick_number: i +  1 + pickNumberTracker,
           draftId: draftId
         }));
@@ -273,4 +272,29 @@ export function loadUser(username, password) {
       const isValid = user.password === hashedPW;
       return { user: user.toJSON(), isValid };
     });
+}
+
+export function teamUpdate(prop, val, id) {
+  return Team.findOne({ where: { id }}).then((team) => {
+    return team.update({ [prop]: val });
+  });
+}
+
+export function nominationUpdate(prop, val, pick_number) {
+  return Nomination.findOne({ where: { pick_number }}).then((nomination) => {
+    return nomination.update({ [prop]: val });
+  });
+}
+
+export function playerUpdate(prop, val, id) {
+  return Player.findOne({ where: { id }}).then((player) => {
+    return player.update({ [prop]: val });
+  });
+}
+
+export function captaincyUpdate(username, giveOrRemove, teamId) {
+  const captain = giveOrRemove === 'give' ? true : false;
+  return User.findOne({ where: { username }}).then((user) => {
+    return user.update({ is_captain: captain, teamId: captain ? teamId : null });
+  });
 }
