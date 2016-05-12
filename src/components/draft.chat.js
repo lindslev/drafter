@@ -5,55 +5,71 @@ import moment from 'moment';
 class DraftChat extends React.Component {
   constructor(props) {
     super(props);
+    this.handleKeyDown = this.handleKeyDown.bind(this);
+    this.handleValueChange = this.handleValueChange.bind(this);
+    this.sendChat = this.sendChat.bind(this);
+    this.renderChatBox = this.renderChatBox.bind(this);
     this.renderTopSection = this.renderTopSection.bind(this);
     this.renderChatStream = this.renderChatStream.bind(this);
   }
 
-  renderCurrentNomination() {
-
+  handleKeyDown({ keyCode }) {
+    if ( keyCode === 13 ) {
+      this.sendChat();
+    }
   }
 
-  renderTopSection() {
+  handleValueChange(key, { target }) {
+    const { setProperty } = this.props;
+    setProperty(key, target.value);
+  }
+
+  sendChat() {
+    const { userChatMessage, setProperty, socket } = this.props;
+    const localStorage = window.localStorage || localStorage;
+    const username = localStorage.getItem('drafterUsername');
+    const message = {
+      username,
+      type: 'message',
+      sent: new Date(),
+      message: `: ${userChatMessage}`
+    };
+    socket.emit('send-chat-message', message);
+    setProperty('userChatMessage', '');
+  }
+
+  renderChatBox() {
     return (
-      <div className="chat-top-section">
-        <div className="awaiting">
-          <p>Ibis <span className="timer">11.0s</span></p>
-        </div>
-        <div className="chat-box">
-          <input type="text" placeholder="send a chat message" />
-          <button>Send</button>
-        </div>
+      <div className="chat-box">
+        <input
+          onKeyDown={this.handleKeyDown}
+          onChange={this.handleValueChange.bind(this, 'userChatMessage')} 
+          value={userChatMessage}
+          type="text"
+          placeholder="send a chat message" />
+        <button onClick={this.sendChat}>Send</button>
       </div>
     );
   }
 
-  renderChatStream() {
-    const chats = [{
-      type: 'message',
-      sent: new Date(),
-      username: 'kappa',
-      message: ': hey wassup hello seen yo pretty face soon as u walked thru the door'
-    }, {
-      type: 'bid',
-      sent: new Date(),
-      username: 'jjpoole',
-      message: 'bids 1 on intercest'
-    }, {
-      type: 'nomination',
-      sent: new Date(),
-      username: 'Stann',
-      message: 'nominates Gem with an initial bid of 0'
-    }, {
-      type: 'new_picker',
-      sent: new Date(),
-      username: null,
-      message: 'PrivateMajor is now picking'
-    }, {
-      type: 'win',
-      sent: new Date(),
-      username: 'Curry',
-      message: 'wins Ibis for 51!'
-    }];
+  renderTopSection() {
+    const { userChatMessage } = this.props;
+    const localStorage = window.localStorage || localStorage;
+    const isLoggedIn = localStorage.getItem('drafterUserId');
+    const isCaptain = localStorage.getItem('drafterUserIsCaptain') === "true";
+    const isAdmin = localStorage.getItem('drafterUserIsAdmin') === "true";
+    const canChat = isLoggedIn && (isCaptain || isAdmin);
+    return (
+      <div className="chat-top-section">
+        <div className="awaiting">
+          <p>Tpr <span className="timer">11.0s</span></p>
+        </div>
+        {canChat ? this.renderChatBox(): null}
+      </div>
+    );
+  }
+
+  renderChatStream(chats) {
     return (
       <div className="chat-stream">
         {chats.map(this.renderChatLineItem)} 
@@ -76,10 +92,11 @@ class DraftChat extends React.Component {
   }
 
   render() {
+    const { stream } = this.props;
     return (
       <div className="draft-chat">
         {this.renderTopSection()}
-        {this.renderChatStream()}
+        {this.renderChatStream(stream)}
       </div>
     );
   }

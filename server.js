@@ -23,8 +23,13 @@ app.use(passport.session());
 
 import socketio from 'socket.io';
 const io = socketio.listen(app.listen(process.env.PORT || 3000));
-io.on('connection', () => {
+io.on('connection', (socket) => {
   console.log('A user connected.');
+
+  socket.on('send-chat-message', (message) => {
+    socket.emit('receive-chat-message', message);
+  });
+
 });
 
 import { addRoutes } from './routes';

@@ -4,12 +4,13 @@ import { Router, Route, IndexRoute, browserHistory } from 'react-router';
 import { Provider } from 'react-redux';
 import createStore from './redux/create';
 
-const socket = io();
+const socket = io.connect('http://localhost:3000');
 
 import Header from './components/header';
 
 class App extends React.Component {
   render() {
+    console.log('this.props', this.props);
     return (
       <div>
         <Header />
@@ -21,15 +22,23 @@ class App extends React.Component {
 
 const store = createStore({});
 
+import initializeListeners from './socket';
+initializeListeners(socket, store);
+
 import Page from './components/page';
 import AdminCreateView from './components/admin.create';
 import AdminEditView from './components/admin.edit';
 import DraftView from './components/draft.view';
 import UserLogin from './components/user.login';
 
+function createElement(Component, props) {
+  props.socket = socket;
+  return <Component {...props} />;
+}
+
 const APP = (
   <Provider store={store}>
-    <Router history={browserHistory}>
+    <Router history={browserHistory} createElement={createElement}>
       <Route path='/' component={App}>
         <IndexRoute component={DraftView} />
         <Route path='admin' component={Page}>
