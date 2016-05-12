@@ -249,7 +249,7 @@ export function loadDraft(id) {
       return Player.findAll({ where: { draftId: id }});
     }).then((p) => {
       players = p;
-      return Nomination.findAll({ where: { draftId: id }});
+      return Nomination.findAll({ where: { draftId: id }, order: ['pick_number']});
     }).then((n) => {
       nominations = n;
       return { teams, draft, nominations, players };

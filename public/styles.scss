@@ -1,8 +1,12 @@
 /* constants */
 $shadow-color: #8C8C8C;
 $dark-blue: #00006F;
+$light-gray: #D6D6D6;
 $dark-gray: #8A8A8A;
 $button-hover: #7479B3;
+$west: #80AEBD;
+$east: #BD8080;
+$light-green: #ADE675;
 
 body {
   margin: 0;
@@ -137,4 +141,155 @@ button {
       margin-top: 10px;
     }
   }
+}
+
+.draft-bid {
+  width: 65%;
+  height: 150px;
+  float: left;
+  border: 1px solid $dark-blue;
+  border-bottom: none;
+
+  .spectator-bidding-section {
+    .spectator-title {
+      font-size: 50px;
+    }
+  }
+
+  .admin-bidding-section, .spectator-bidding-section, .captain-bidding-section {
+    padding-top: 20px;
+    padding-left: 50px;
+    float: left;
+    font-size: 20px;
+
+    .nomination-input {
+      display: block;
+      border: 2px solid $dark-blue;
+      text-align: center;
+    }
+
+    .bid-input {
+      width: 30px;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .auto-bid {
+      padding: 5px;
+      font-size: 14px;
+      background: $light-green;
+      margin-left: 20px;
+    }
+
+    .admin-button-disclosure {
+      font-size: 12px;
+      margin-top: 4px;
+      width: 300px;
+    }
+  }
+
+  .nomination-details {
+    padding-top: 20px;
+    padding-left: 10px;
+    border-left: 1px solid $dark-blue;
+    height: 150px;
+    width: 250px;
+    float: right;
+    background: $light-gray;
+    color: black; 
+    p {
+      margin-bottom: 2px;
+    }
+    .bold {
+      font-weight: 600;
+      font-size: 18px;
+      color: $dark-blue;
+    }
+    .smaller {
+      font-size: 14px;
+    }
+  }
+
+  .nomination-order {
+    height: 150px;
+    padding-left: 10px;
+    width: 160px;
+    border-left: 1px solid $dark-blue;
+    float: right;
+    font-size: 12px;
+
+    p {
+      margin-bottom: 4px;
+    }
+
+    .order-list {
+      overflow-y: scroll;
+      overflow-x: hidden;
+      height: 125px;
+    }
+  }
+}
+
+.draft-teams {
+  width: 65%;
+  float: left;
+  border: 1px solid $dark-blue;
+  border-bottom: 0px;
+  
+  .row {
+    border-bottom: 1px solid $dark-blue;
+  }
+
+  .col-md-3 {
+    font-size: 12px;
+    padding-top: 10px;
+    height: 140px;
+    text-align: center;
+
+    .team-title {
+      background: black;
+      color: white;
+    }
+
+    .roster-spots {
+      .roster-spot {
+        clear: both;
+        background: white;
+        height: 18px;
+        border-bottom: 1px solid $light-gray;
+        .player-name {
+          float: left;
+          padding-left: 4px;
+        }
+        .player-cost, .player-captain, .player-prelim {
+          float: right;
+          padding-right: 4px;
+        }
+        .player-captain {
+          background: url("//b.thumbs.redditmedia.com/L2z3vrtLN5dlYeyJlvvhgx1CouGcymP5_IPF-1wNPnU.png") 100px 100px no-repeat;
+          background-position: -64px -56px;
+          width: 18px;
+          height: 18px;
+        }
+        .player-prelim {
+          background: url("//b.thumbs.redditmedia.com/L2z3vrtLN5dlYeyJlvvhgx1CouGcymP5_IPF-1wNPnU.png") 100px 100px no-repeat;
+          background-position: 0 -40px;
+          width: 12px;
+          height: 16px;
+          margin-right: 2px;
+        }
+      }
+    }
+  }
+  
+  .east-team {
+    background: $east;
+  }
+  .west-team {
+    background: $west;
+  }
+}
+
+.draft-chat {
+
 }
