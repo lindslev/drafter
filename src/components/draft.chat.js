@@ -38,13 +38,13 @@ class DraftChat extends React.Component {
     setProperty('userChatMessage', '');
   }
 
-  renderChatBox() {
+  renderChatBox(msg) {
     return (
       <div className="chat-box">
         <input
           onKeyDown={this.handleKeyDown}
           onChange={this.handleValueChange.bind(this, 'userChatMessage')} 
-          value={userChatMessage}
+          value={msg}
           type="text"
           placeholder="send a chat message" />
         <button onClick={this.sendChat}>Send</button>
@@ -64,7 +64,7 @@ class DraftChat extends React.Component {
         <div className="awaiting">
           <p>Tpr <span className="timer">11.0s</span></p>
         </div>
-        {canChat ? this.renderChatBox(): null}
+        {canChat ? this.renderChatBox(userChatMessage): null}
       </div>
     );
   }

@@ -5,8 +5,9 @@ const RECEIVE_CHAT_MESSAGE = 'CHAT_MESSAGE';
 const SET_PROPERTY = 'SET_PROPERTY';
 
 function handleChatMessage(state, { payload }) {
-  const newStream = state.stream.concat(payload);
-  return assign({}, state, { stream: newStream.reverse() });
+  const newStream = state.stream;
+  newStream.unshift(payload);
+  return assign({}, state, { stream: newStream });
 }
 
 function handleSetProperty(state, action) {

@@ -4,13 +4,12 @@ import { Router, Route, IndexRoute, browserHistory } from 'react-router';
 import { Provider } from 'react-redux';
 import createStore from './redux/create';
 
-const socket = io.connect('http://localhost:3000');
+const socket = io();
 
 import Header from './components/header';
 
 class App extends React.Component {
   render() {
-    console.log('this.props', this.props);
     return (
       <div>
         <Header />
