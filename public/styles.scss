@@ -189,7 +189,7 @@ button {
   }
 
   .nomination-details {
-    padding-top: 20px;
+    padding-top: 5px;
     padding-left: 10px;
     border-left: 1px solid $dark-blue;
     height: 150px;
@@ -291,5 +291,51 @@ button {
 }
 
 .draft-chat {
-
+  float: right;
+  width: 410px;
+  .chat-top-section {
+    background: $light-gray;
+    color: white;
+    height: 150px;
+    .awaiting {
+      font-size: 40px;
+      color: $dark-blue;
+      text-align: center;
+      .timer {
+        font-size: 20px;
+      }
+    }
+    .chat-box {
+      margin-top: 50px;
+      input {
+        margin-left: 40px;
+        color: black;
+        width: 75%;
+      }
+      button {
+        padding: 4px;
+        font-size: 12px;
+      }
+    }
+  }
+  .chat-stream {
+    font-family: Helvetica;
+    overflow-y: scroll;
+    .chat-message {
+      padding: 10px 5px;
+    }
+    .chat-nomination {
+      background: #C0E0EB;
+      color: #20718C;
+    }
+    .chat-win {
+      background: green;
+      color: white;
+      font-weight: bold;
+    }
+    .chat-bid {
+      background: #EAED93;
+      color: #857B32;
+    }
+  }
 }

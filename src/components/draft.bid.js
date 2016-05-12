@@ -49,6 +49,7 @@ class DraftBid extends React.Component {
   renderNominationDetails(currentNomination, playersLeft) {
     return (
       <div className="nomination-details">
+        <p><span className="bold">Last pick:</span> ---</p>
         <p><span className="bold">Nominating:</span> PrivateMajor</p>
         <p className="smaller">(nomination #{currentNomination} overall)</p>
         <p><span className="bold">Up next:</span> Stann</p>

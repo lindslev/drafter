@@ -27,9 +27,9 @@ class DraftView extends React.Component {
     const nominationOrder = this.getNominationOrder(teams, nominations);
     return (
       <div className="draft-view">
+        <Chat />
         <Bid nominationOrder={nominationOrder} nominations={nominations || []} teams={teams || []} />
         <Teams teams={teams || []} />
-        <Chat />
       </div>
     );
   }
