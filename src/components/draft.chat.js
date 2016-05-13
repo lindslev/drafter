@@ -53,7 +53,7 @@ class DraftChat extends React.Component {
   }
 
   renderTopSection() {
-    const { userChatMessage, nominatedPlayer, time } = this.props;
+    const { userChatMessage, nominatedPlayer, time, lastBid } = this.props;
     const localStorage = window.localStorage || localStorage;
     const isLoggedIn = localStorage.getItem('drafterUserId');
     const isCaptain = localStorage.getItem('drafterUserIsCaptain') === "true";
@@ -63,6 +63,7 @@ class DraftChat extends React.Component {
       <div className="chat-top-section">
         <div className="awaiting">
           <p>{nominatedPlayer} <span className="timer">{`${time}s`}</span></p>
+          <p className="last-bid">{lastBid.coins} coins</p>
         </div>
         {canChat ? this.renderChatBox(userChatMessage): null}
       </div>

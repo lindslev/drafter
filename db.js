@@ -328,3 +328,11 @@ export function updateNomination(playerName, teamId, nomId, coins) {
     });
   });
 }
+
+export function updateAfterBid(teamId, coins, nomId, player) {
+  return Player.findOne({ where: { name: player }}).then((p) => {
+    return p.update({ current_bid_team: +teamId, current_bid_amount: coins }); 
+  }).then(() => {
+    return Team.findOne({ where: { id: +teamId }});
+  });
+}

@@ -1,7 +1,7 @@
 import { broadcast } from '../../server';
 import { createDraft, loadDraft, captaincyUpdate,
          playerUpdate, nominationUpdate, teamUpdate,
-         updateNomination } from '../../db';
+         updateNomination, updateAfterBid } from '../../db';
 
 export function show(req, res) {
   loadDraft(Number(req.query.id || 1))
@@ -46,7 +46,6 @@ export function editCaptaincy(req, res) {
 
 export function setNomination(req, res) {
   const { playerName, teamId, nomId, coins } = req.body || {};
-  console.log('COINS', coins);
   updateNomination(playerName, teamId, nomId, coins).then((team) => {
     broadcast.emit('nomination', { playerName, teamId, nomId, coins, teamName: team.name });
     res.status(200).json({});
@@ -57,11 +56,13 @@ export function setNomination(req, res) {
 }
 
 export function bidOnPlayer(req, res) {
-  const { bidderId, coins, nomId } = req.body || {};
-  // Player.update
-  // Nomination.update
-  broadcast.emit('bid', { bidderId, coins, nomId });
-  res.status(200).json({});
+  const { bidderId, coins, nomId, player } = req.body || {};
+  updateAfterBid(bidderId, coins, nomId, player).then((team) => { 
+    broadcast.emit('bid', { bidderId, coins, playerName: player, teamName: team.name });
+    res.status(200).json({});
+  }).catch((err) => {
+    console.log('err', err);
+  });
 }
 
 export function playerWon(req, res) {

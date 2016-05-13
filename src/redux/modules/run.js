@@ -6,6 +6,7 @@ const SET_PROPERTY = 'SET_PROPERTY';
 const NOMINATE_PLAYER = 'NOMINATE_PLAYER';
 const PLAYER_NOMINATED = 'PLAYER_NOMINATED';
 const BID = 'BID';
+const BID_MADE = 'BID_MADE';
 
 const TIMER_TICK = 'TIMER_TICK';
 const TIMER_STARTED = 'TIMER_STARTED';
@@ -27,6 +28,11 @@ function handlePlayerNominated(state, { payload }) {
   return assign({}, state, { nominatedPlayer: playerName, lastBid: {
     teamId, coins
   }});
+}
+
+function handleBidMade(state, { payload }) {
+  const { bidderId, coins } = payload;
+  return assign({}, state, { lastBid: { teamId: bidderId, coins } });
 }
 
 function handleTimerTick(state, { payload }) {
@@ -69,6 +75,8 @@ export default function reducer(state = initialState, action = {}) {
     return handleChatMessage(state, action);
   case PLAYER_NOMINATED:
     return handlePlayerNominated(state, action);
+  case BID_MADE:
+    return handleBidMade(state, action);
   case TIMER_TICK:
     return handleTimerTick(state, action);
   case TIMER_STARTED:
@@ -78,13 +86,6 @@ export default function reducer(state = initialState, action = {}) {
   default:
     return state;
   }
-}
-
-export function sendChatMessage(message) {
-  socket.emit('send-chat-message', message);
-  // return {
-  //   type: SEND_
-  // };
 }
 
 export function receiveChatMessage(message) {
@@ -119,14 +120,21 @@ export function playerNominated(nomination) {
   };
 }
 
-export function bidOnNomination(bidderId, coins, nomId) {
+export function bidOnNomination(bidderId, coins, nomId, nominatedPlayer) {
   return {
     type: BID,
     payload: {
       futureAPIPayload(apiClient) {
-        return apiClient.bidOnPlayer(bidderId, coins, nomId);
+        return apiClient.bidOnPlayer(bidderId, coins, nomId, nominatedPlayer);
       }
     }
+  };
+}
+
+export function bidMadeOnNomination(bid) {
+  return {
+    type: BID_MADE,
+    payload: bid
   };
 }
 

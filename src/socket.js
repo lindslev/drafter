@@ -1,6 +1,7 @@
 import { loadDraft } from './redux/modules/edit';
 
-import { receiveChatMessage, playerNominated, startTimer } from './redux/modules/run';
+import { receiveChatMessage, playerNominated, startTimer,
+         bidMadeOnNomination } from './redux/modules/run';
 
 function initializeListeners(socket, { dispatch }) {
   socket.on('admin-update', (id) => {
@@ -23,9 +24,16 @@ function initializeListeners(socket, { dispatch }) {
     }));
   });
 
-  socket.on('bid', (data) => {
+  socket.on('bid', (bid) => {
+    const { playerName, teamName, coins } = bid;
     dispatch(startTimer('bid'));
-    console.log('data', data);
+    dispatch(bidMadeOnNomination(bid));
+    dispatch(receiveChatMessage({
+      type: 'bid',
+      sent: new Date(),
+      username: teamName,
+      message: `bids ${coins} on ${playerName}`
+    }));
   });
 
   socket.on('win', (data) => {

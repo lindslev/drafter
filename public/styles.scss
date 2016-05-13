@@ -188,11 +188,14 @@ button {
       margin-top: 20px;
     }
 
-    .auto-bid {
+    .auto-bid, .auto-bid-disabled {
       padding: 5px;
       font-size: 14px;
       background: $light-green;
       margin-left: 20px;
+    }
+    .auto-bid-disabled {
+      background: $light-gray;
     }
 
     .admin-button-disclosure {
@@ -318,9 +321,12 @@ button {
       .timer {
         font-size: 20px;
       }
+      .last-bid {
+        font-size: 14px;
+      }
     }
     .chat-box {
-      margin-top: 50px;
+      margin-top: 20px;
       input {
         margin-left: 40px;
         color: black;

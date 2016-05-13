@@ -15,7 +15,7 @@ class DraftView extends React.Component {
   }
 
   componentWillMount() {
-    this.props.editActions.loadDraft(1);
+    this.props.editActions.loadDraft(7);
   }
 
   getNominationOrder(teams, nominations) {
@@ -25,12 +25,13 @@ class DraftView extends React.Component {
   render() {
     const { teams, nominations, players } = this.props.editState;
     const { stream, userChatMessage, captainNomination,
-            captainBid, nominatedPlayer, lastBid, time } = this.props.runState;
+            captainBid, nominatedPlayer, lastBid, time, timerRunning } = this.props.runState;
     const { bidOnNomination, setProperty, nominatePlayer } = this.props.runActions;
     const nominationOrder = this.getNominationOrder(teams, nominations);
     return (
       <div className="draft-view">
         <Chat
+          lastBid={lastBid}
           nominatedPlayer={nominatedPlayer}
           socket={this.props.socket}
           stream={stream}
@@ -38,6 +39,7 @@ class DraftView extends React.Component {
           setProperty={setProperty}
           time={time} />
         <Bid
+          timerRunning={timerRunning}
           bidOnNomination={bidOnNomination}
           captainBid={captainBid}
           lastBid={lastBid}
