@@ -142,13 +142,19 @@ function timerTick(dispatch, getState) {
 export function startTimer(type) {
   return (dispatch, getState) => {
     const { runDraft: { timerId } } = getState();
+    const time = type === 'nomination' ? 30 : 15;
     if (timerId === null) {
       dispatch({
         type: TIMER_STARTED,
         payload: {
           timerId: setInterval(timerTick.bind(this, dispatch, getState), 1000),
-          time: type === 'nomination' ? 30 : 15
+          time
         }
+      });
+    } else {
+      dispatch({
+        type: TIMER_STARTED,
+        payload: { timerId, time }
       });
     }
   }
