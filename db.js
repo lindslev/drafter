@@ -300,21 +300,31 @@ export function captaincyUpdate(username, giveOrRemove, teamId) {
 }
 
 export function updateNomination(playerName, teamId, nomId, coins) {
-  let playerId;
-  let draftId;
-  return Player.findOne({ where: { name: playerName }}).then((p) => {
-    playerId = p.id;
-    return p.update({ is_nominated: true, current_bid_team: teamId, current_bid_amount: coins });
-  }).then(() => {
-    return Nomination.findOne({ where: { id: nomId }});
-  }).then((n) => {
-    draftId = n.draftId;
-    return n.update({ start_time: new Date(), playerId });
-  }).then(() => {
-    return Draft.findOne({ where: { id: draftId }});
-  }).then((d) => {
-    return d.update({ has_begun: true, player_is_nominated: true, latest_nomination_time: new Date(), current_nomination: nomId });
-  }).then(() => {
-    return Team.findOne({ where: { id: teamId }});
+  return sequelize.transaction((t) => {
+    return Promise.all([
+      Player.findOne({ where: { name: playerName }}, { transaction: t }),
+      Nomination.findOne({ where: { id: nomId }}, { transaction: t }),
+      Team.findOne({ where: { id: teamId }}, { transaction: t })
+    ])
+    .then((results) => {
+      const [player, nomination, team] = results;
+
+      return Promise.all([
+        Draft.findOne({ where: { id: nomination.draftId }}, { transaction: t }),
+        player.update(
+          { is_nominated: true, current_bid_team: teamId, current_bid_amount: coins },
+          { transaction: t }
+        ),
+        nomination.update({ start_time: new Date(), playerId: player.id }, { transaction: t })
+      ])
+      .then((results) => {
+        const [draft] = results;
+        return draft.update(
+          { has_begun: true, player_is_nominated: true, latest_nomination_time: new Date(), current_nomination: nomId },
+          { transaction: t }
+        );
+      })
+      .then(() => team);
+    });
   });
 }
