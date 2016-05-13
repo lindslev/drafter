@@ -84,9 +84,9 @@ export function nominatePlayer(playerName, teamId, nomId, coins) {
   });
 }
 
-export function bidOnPlayer(bidderId, coins, nomId) {
+export function bidOnPlayer(bidderId, coins, nomId, player) {
   return post(`/api/draft/bid`, {
-    data: { bidderId, coins, nomId }
+    data: { bidderId, coins, nomId, player }
   });
 }
 
