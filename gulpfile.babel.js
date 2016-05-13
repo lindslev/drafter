@@ -83,5 +83,18 @@ gulp.task('webpack:build-dev', (cb) => {
   });
 });
 
+gulp.task('webpack:watch-dev', (cb) => {
+  const myDevConfig = Object.create(WebpackConfig);
+  myDevConfig.devtool = 'inline-source-map';
+  myDevConfig.debug = true;
+
+  const devCompiler = webpack(myDevConfig);
+
+  devCompiler.watch({}, function(err, stats) {
+    if (err) console.error(err);
+    console.log('Built');
+  });
+});
+
 gulp.task('dev', ['webpack:build-dev', 'rebuild-css']);
 gulp.task('build', ['copy', 'css', 'webpack:build-prod', 'watch-css']);
