@@ -77,3 +77,28 @@ export function editCaptaincy(username, giveOrRemove, teamId) {
     data: { username, giveOrRemove, teamId }
   });
 }
+
+export function nominatePlayer(playerName, teamId, nomId, coins) {
+  return post(`/api/draft/nomination`, {
+    data: { playerName, teamId, nomId, coins }
+  });
+}
+
+export function bidOnPlayer(bidderId, coins, nomId) {
+  return post(`/api/draft/bid`, {
+    data: { bidderId, coins, nomId }
+  });
+}
+
+export function playerWon(winnerId) {
+  return post(`/api/draft/win`, {
+    data: { winnerId }
+  });
+}
+
+export function setStatusOfDraft(status) {
+  // only admins
+  return post(`/api/draft/status`, {
+    data: { status }
+  });
+}

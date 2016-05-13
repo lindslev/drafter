@@ -298,3 +298,23 @@ export function captaincyUpdate(username, giveOrRemove, teamId) {
     return user.update({ is_captain: captain, teamId: captain ? teamId : null });
   });
 }
+
+export function updateNomination(playerName, teamId, nomId, coins) {
+  let playerId;
+  let draftId;
+  return Player.findOne({ where: { name: playerName }}).then((p) => {
+    playerId = p.id;
+    return p.update({ is_nominated: true, current_bid_team: teamId, current_bid_amount: coins });
+  }).then(() => {
+    return Nomination.findOne({ where: { id: nomId }});
+  }).then((n) => {
+    draftId = n.draftId;
+    return n.update({ start_time: new Date(), playerId });
+  }).then(() => {
+    return Draft.findOne({ where: { id: draftId }});
+  }).then((d) => {
+    return d.update({ has_begun: true, player_is_nominated: true, latest_nomination_time: new Date(), current_nomination: nomId });
+  }).then(() => {
+    return Team.findOne({ where: { id: teamId }});
+  });
+}

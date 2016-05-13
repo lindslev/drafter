@@ -23,16 +23,9 @@ app.use(passport.session());
 
 import socketio from 'socket.io';
 const io = socketio.listen(app.listen(process.env.PORT || 3000));
+export const broadcast = io.sockets;
 io.on('connection', (socket) => {
   console.log('A user connected.');
-  const broadcast = io.sockets;
-
-  broadcast.emit('receive-chat-message', {
-    username: 'gem',
-    message: 'qak',
-    sent: new Date(),
-    type: 'message'
-  });
 
   socket.on('send-chat-message', (message) => {
     broadcast.emit('receive-chat-message', message);

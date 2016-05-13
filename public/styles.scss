@@ -51,6 +51,9 @@ input {
   &:focus {
     outline: none;
   }
+  &:disabled {
+    background: $light-gray;
+  }
 }
 
 input[type=number]::-webkit-inner-spin-button, 
@@ -102,6 +105,9 @@ button {
   cursor: pointer;
   &:hover {
     background: $button-hover;
+  }
+  &:disabled {
+    background: $light-gray;
   }
 }
 
@@ -156,6 +162,14 @@ button {
     }
   }
 
+  .captain-bidding-section {
+    padding-left: 70px;
+    p {
+      font-size: 14px;
+      margin-top: 10px;
+    }
+  }
+
   .admin-bidding-section, .spectator-bidding-section, .captain-bidding-section {
     padding-top: 20px;
     padding-left: 50px;
@@ -182,9 +196,9 @@ button {
     }
 
     .admin-button-disclosure {
-      font-size: 12px;
+      font-size: 10px;
       margin-top: 4px;
-      width: 300px;
+      width: 250px;
     }
   }
 
@@ -193,7 +207,7 @@ button {
     padding-left: 10px;
     border-left: 1px solid $dark-blue;
     height: 150px;
-    width: 250px;
+    width: 310px;
     float: right;
     background: $light-gray;
     color: black; 
@@ -321,6 +335,7 @@ button {
   .chat-stream {
     font-family: Helvetica;
     overflow-y: scroll;
+    height: 600px;
     .chat-message {
       padding: 10px 5px;
     }

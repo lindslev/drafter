@@ -23,15 +23,33 @@ class DraftView extends React.Component {
   }
 
   render() {
-    const { teams, nominations } = this.props.editState;
-    const { stream, userChatMessage } = this.props.runState;
-    const { setProperty } = this.props.runActions;
+    const { teams, nominations, players } = this.props.editState;
+    const { stream, userChatMessage, captainNomination,
+            captainBid, nominatedPlayer, lastBid } = this.props.runState;
+    const { bidOnNomination, setProperty, nominatePlayer } = this.props.runActions;
     const nominationOrder = this.getNominationOrder(teams, nominations);
     return (
       <div className="draft-view">
-        <Chat socket={this.props.socket} stream={stream} userChatMessage={userChatMessage} setProperty={setProperty} />
-        <Bid nominationOrder={nominationOrder} nominations={nominations || []} teams={teams || []} />
-        <Teams teams={teams || []} />
+        <Chat
+          nominatedPlayer={nominatedPlayer}
+          socket={this.props.socket}
+          stream={stream}
+          userChatMessage={userChatMessage}
+          setProperty={setProperty} />
+        <Bid
+          bidOnNomination={bidOnNomination}
+          captainBid={captainBid}
+          lastBid={lastBid}
+          nominatePlayer={nominatePlayer}
+          nominatedPlayer={nominatedPlayer}
+          nominationOrder={nominationOrder}
+          nominations={nominations || []}
+          players={players || []}
+          teams={teams || []}
+          captainNomination={captainNomination}
+          setProperty={setProperty} />
+        <Teams
+          teams={teams || []} />
       </div>
     );
   }
