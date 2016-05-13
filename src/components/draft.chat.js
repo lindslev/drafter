@@ -25,7 +25,7 @@ class DraftChat extends React.Component {
   }
 
   sendChat() {
-    const { userChatMessage, setProperty, socket } = this.props;
+    const { userChatMessage, setProperty, startTimer, socket } = this.props;
     const localStorage = window.localStorage || localStorage;
     const username = localStorage.getItem('drafterUsername');
     const message = {
@@ -43,7 +43,7 @@ class DraftChat extends React.Component {
       <div className="chat-box">
         <input
           onKeyDown={this.handleKeyDown}
-          onChange={this.handleValueChange.bind(this, 'userChatMessage')} 
+          onChange={this.handleValueChange.bind(this, 'userChatMessage')}
           value={msg}
           type="text"
           placeholder="send a chat message" />
@@ -53,7 +53,7 @@ class DraftChat extends React.Component {
   }
 
   renderTopSection() {
-    const { userChatMessage, nominatedPlayer } = this.props;
+    const { userChatMessage, nominatedPlayer, time } = this.props;
     const localStorage = window.localStorage || localStorage;
     const isLoggedIn = localStorage.getItem('drafterUserId');
     const isCaptain = localStorage.getItem('drafterUserIsCaptain') === "true";
@@ -62,7 +62,7 @@ class DraftChat extends React.Component {
     return (
       <div className="chat-top-section">
         <div className="awaiting">
-          <p>{nominatedPlayer} <span className="timer">11.0s</span></p>
+          <p>{nominatedPlayer} <span className="timer">{`${time}s`}</span></p>
         </div>
         {canChat ? this.renderChatBox(userChatMessage): null}
       </div>
@@ -72,7 +72,7 @@ class DraftChat extends React.Component {
   renderChatStream(chats) {
     return (
       <div className="chat-stream">
-        {chats.map(this.renderChatLineItem)} 
+        {chats.map(this.renderChatLineItem)}
       </div>
     );
   }

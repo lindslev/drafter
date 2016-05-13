@@ -53,7 +53,7 @@ export function loadDraft(id) {
   };
 }
 
-export function setProperty(property, value) { 
+export function setProperty(property, value) {
   return {
     type: SET_PROPERTY,
     payload: { [property]: value }
@@ -67,7 +67,7 @@ export function updateProperty(type, prop, val, identifier) {
       futureAPIPayload(apiClient) {
         return apiClient.updateProperty(type, prop, val, identifier);
       }
-    } 
+    }
   };
 }
 

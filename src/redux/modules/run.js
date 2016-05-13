@@ -7,6 +7,10 @@ const NOMINATE_PLAYER = 'NOMINATE_PLAYER';
 const PLAYER_NOMINATED = 'PLAYER_NOMINATED';
 const BID = 'BID';
 
+const TIMER_TICK = 'TIMER_TICK';
+const TIMER_STARTED = 'TIMER_STARTED';
+const TIMER_STOPPED = 'TIMER_STOPPED';
+
 function handleChatMessage(state, { payload }) {
   const newStream = state.stream;
   newStream.unshift(payload);
@@ -25,6 +29,26 @@ function handlePlayerNominated(state, { payload }) {
   }});
 }
 
+function handleTimerTick(state, { payload }) {
+  return assign({}, state, { time: state.time - 1 });
+}
+
+function handleTimerStart(state, { payload }) {
+  return assign({}, state, {
+    timerId: payload.timerId,
+    timerRunning: true,
+    time: payload.time
+  });
+}
+
+function handleTimerStop(state, { payload }) {
+  return assign({}, state, {
+    timerId: null,
+    timerRunning: false,
+    time: 0
+  });
+}
+
 const initialState = {
   stream: [],
   userChatMessage: '',
@@ -32,7 +56,9 @@ const initialState = {
   captainNomination: '',
   nominatedPlayer: '',
   lastBid: {},
-  timerRunning: false
+  timerRunning: false,
+  timerId: null,
+  time: 0
 };
 
 export default function reducer(state = initialState, action = {}) {
@@ -43,6 +69,12 @@ export default function reducer(state = initialState, action = {}) {
     return handleChatMessage(state, action);
   case PLAYER_NOMINATED:
     return handlePlayerNominated(state, action);
+  case TIMER_TICK:
+    return handleTimerTick(state, action);
+  case TIMER_STARTED:
+    return handleTimerStart(state, action);
+  case TIMER_STOPPED:
+    return handleTimerStop(state, action);
   default:
     return state;
   }
@@ -62,7 +94,7 @@ export function receiveChatMessage(message) {
   };
 }
 
-export function setProperty(property, value) { 
+export function setProperty(property, value) {
   return {
     type: SET_PROPERTY,
     payload: { [property]: value }
@@ -96,6 +128,40 @@ export function bidOnNomination(bidderId, coins, nomId) {
       }
     }
   };
+}
+
+function timerTick(dispatch, getState) {
+  const { runDraft: { time } } = getState();
+  if (time === 0) {
+    dispatch(stopTimer());
+  } else {
+    dispatch({ type: TIMER_TICK });
+  }
+}
+
+export function startTimer(type) {
+  return (dispatch, getState) => {
+    const { runDraft: { timerId } } = getState();
+    if (timerId === null) {
+      dispatch({
+        type: TIMER_STARTED,
+        payload: {
+          timerId: setInterval(timerTick.bind(this, dispatch, getState), 1000),
+          time: type === 'nomination' ? 30 : 15
+        }
+      });
+    }
+  }
+}
+
+export function stopTimer() {
+  return (dispatch, getState) => {
+    const { runDraft: { timerId } } = getState();
+    if (timerId !== null) {
+      clearInterval(timerId);
+      dispatch({ type: TIMER_STOPPED, payload: timerId });
+    }
+  }
 }
 
 // to do:
