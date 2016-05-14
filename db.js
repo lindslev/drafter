@@ -336,3 +336,40 @@ export function updateAfterBid(teamId, coins, nomId, player) {
     return Team.findOne({ where: { id: +teamId }});
   });
 }
+
+export function teamWinsPlayer(nomId, playerName) {
+  let player;
+  let draftId;
+  let teamName, coins;
+  return Nomination.findOne({ where: { id: +nomId }}).then((n) => {
+    draftId = n.draftId;
+    return n.update({ is_done: true });
+  }).then(() => {
+    return Player.findOne({ where: { name: playerName }});
+  }).then((p) => {
+    if ( p.is_selected ) throw new Error('Already updated player.');
+    player = p;
+    return p.update({ is_selected: true });
+  }).then(() => {
+    const winningTeamId = +player.current_bid_team;
+    return Team.findOne({ where: { id: winningTeamId }});
+  }).then((t) => {
+    teamName = t.name;
+    let keeper_coins = t.keeper_coins;
+    let tag_coins = t.tag_coins;
+    const isKeeper = +player.keeper_team === +player.current_bid_team;
+    let cost = player.current_bid_amount;
+    coins = player.current_bid_amount;
+    if ( isKeeper ) {
+      const canPayFullCost = keeper_coins - cost > 0;
+      const couldPay = canPayFullCost ? cost : keeper_coins;
+      const willPay = couldPay > 5 ? 5 : couldPay;
+      keeper_coins = keeper_coins - willPay;
+      cost = cost - willPay;
+    }
+    tag_coins = tag_coins - cost;
+    return t.update({ tag_coins, keeper_coins });
+  }).then(() => {
+    return { coins, teamName, draftId };
+  });
+}

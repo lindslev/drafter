@@ -1,4 +1,4 @@
-import { assign, identity } from 'lodash';
+import { assign, identity, findIndex } from 'lodash';
 import { handlePromiseAction } from '../utils';
 
 const RECEIVE_CHAT_MESSAGE = 'CHAT_MESSAGE';
@@ -7,6 +7,8 @@ const NOMINATE_PLAYER = 'NOMINATE_PLAYER';
 const PLAYER_NOMINATED = 'PLAYER_NOMINATED';
 const BID = 'BID';
 const BID_MADE = 'BID_MADE';
+const WIN_PLAYER = 'WIN_PLAYER';
+const PLAYER_WON = 'PLAYER_WON';
 
 const TIMER_TICK = 'TIMER_TICK';
 const TIMER_STARTED = 'TIMER_STARTED';
@@ -51,7 +53,8 @@ function handleTimerStop(state, { payload }) {
   return assign({}, state, {
     timerId: null,
     timerRunning: false,
-    time: 0
+    time: 0,
+    lastBid: {}
   });
 }
 
@@ -170,12 +173,28 @@ export function startTimer(type) {
 
 export function stopTimer() {
   return (dispatch, getState) => {
-    const { runDraft: { timerId } } = getState();
+    const { runDraft, editDraft } = getState();
+    const { timerId, nominatedPlayer, lastBid } = runDraft;  
+    const { nominations } = editDraft;
+    const nomId = (nominations[findIndex(nominations, (n) => !n.is_done)] || {}).id;
     if (timerId !== null) {
       clearInterval(timerId);
       dispatch({ type: TIMER_STOPPED, payload: timerId });
+      dispatch(winPlayer(nomId, nominatedPlayer));
     }
   }
+}
+
+// potentially add handler that'll reset the state of lastBid here
+export function winPlayer(nomId, playerName) {
+  return {
+    type: WIN_PLAYER,
+    payload: {
+      futureAPIPayload(apiClient) {
+        return apiClient.playerWon(nomId, playerName);
+      }
+    }
+  };
 }
 
 // to do:

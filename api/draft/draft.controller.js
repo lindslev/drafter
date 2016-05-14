@@ -1,7 +1,7 @@
 import { broadcast } from '../../server';
 import { createDraft, loadDraft, captaincyUpdate,
          playerUpdate, nominationUpdate, teamUpdate,
-         updateNomination, updateAfterBid } from '../../db';
+         updateNomination, updateAfterBid, teamWinsPlayer } from '../../db';
 
 export function show(req, res) {
   loadDraft(Number(req.query.id || 1))
@@ -26,9 +26,10 @@ export function create(req, res) {
 
 export function updateProperty(req, res) {
   const updateFxns = { playerUpdate, teamUpdate, nominationUpdate };
-  const { type, prop, val, identifier } = req.body || {};
+  const { type, prop, val, identifier, draftId } = req.body || {};
   const updateFxn = updateFxns[`${type}Update`];
   updateFxn(prop, val, identifier).then(() => {
+    broadcast.emit('admin-update', { draftId });
     res.status(200).json({});
   }).catch((err) => {
     res.status(400).json(err);
@@ -62,16 +63,27 @@ export function bidOnPlayer(req, res) {
     res.status(200).json({});
   }).catch((err) => {
     console.log('err', err);
+    res.status(400).json(err);
   });
 }
 
+const completedNominations = [];
+
 export function playerWon(req, res) {
-  // Nomination.update
-  // Player.update
-  // Team.update -> coins (need to do math for TC or KEEPER)
-  const { winnerId } = req.body || {};
-  broadcast.emit('win', { winnerId });
-  res.status(200).json({});
+  const { nomId, playerName } = req.body || {};
+  if ( completedNominations.indexOf(nomId) === -1 ) {
+    completedNominations.push(nomId);
+    teamWinsPlayer(nomId, playerName).then((data) => {
+      const { teamName, coins, draftId } = data; 
+      broadcast.emit('win', { playerName, teamName, coins, draftId });
+      res.status(200).json({});
+    }).catch((err) => {
+      console.log('err', err);
+      res.status(400).json(err);
+    });
+  } else {
+    res.status(400).json({ message: 'Already handled this nomination.' });
+  }
 }
 
 export function setStatusOfDraft(req, res) {

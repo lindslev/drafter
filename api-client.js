@@ -66,9 +66,9 @@ export function createUser(username, password) {
   });
 }
 
-export function updateProperty(type, prop, val, identifier) {
+export function updateProperty(type, prop, val, identifier, draftId) {
   return post(`/api/draft/update`, {
-    data: { type, prop, val, identifier }
+    data: { type, prop, val, identifier, draftId }
   });
 }
 
@@ -90,9 +90,9 @@ export function bidOnPlayer(bidderId, coins, nomId, player) {
   });
 }
 
-export function playerWon(winnerId) {
+export function playerWon(nomId, playerName) {
   return post(`/api/draft/win`, {
-    data: { winnerId }
+    data: { nomId, playerName }
   });
 }
 

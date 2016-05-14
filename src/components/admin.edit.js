@@ -38,7 +38,8 @@ class AdminEditView extends React.Component {
     } else {
       identifier = identifierForEdit;
     }
-    updateProperty(typeToEdit, propToEdit, newValueForEdit, identifier).then(() => {
+    const draftId = this.props.routeParams.id;
+    updateProperty(typeToEdit, propToEdit, newValueForEdit, identifier, draftId).then(() => {
       window.alert(`Updated type ${typeToEdit}, prop ${propToEdit} as ${newValueForEdit}`);
       return loadDraft(this.props.routeParams.id);
     }).catch((err) => {
@@ -140,9 +141,9 @@ class AdminEditView extends React.Component {
     return (
       <div className="admin-nomination-view">
         <p>Team: {teamName}</p>
-        <p>Nomination time: {start_time ? new Date(start_time) : null}</p>
+        <p>Nomination time: {start_time ? new Date(start_time).toUTCString() : null}</p>
         <p>Player: {playerName}</p>
-        <p>Turn over: {is_done}</p>
+        <p>Nomination complete: {is_done ? 'yes' : 'no'}</p>
         <p>Pick number: {pick_number}</p>
       </div>
     );

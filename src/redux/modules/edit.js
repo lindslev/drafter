@@ -18,9 +18,9 @@ const handleLoadDraft = handlePromiseAction(
 );
 
 const initialState = {
-  teams: null,
-  nominations: null,
-  players: null,
+  teams: [],
+  nominations: [],
+  players: [],
   history: null,
   usernameForCaptaincyEdit: null,
   giveOrRemoveCaptaincy: null,
@@ -60,12 +60,12 @@ export function setProperty(property, value) {
   };
 }
 
-export function updateProperty(type, prop, val, identifier) {
+export function updateProperty(type, prop, val, identifier, draftId) {
   return {
     type: UPDATE_PROPERTY,
     payload: {
       futureAPIPayload(apiClient) {
-        return apiClient.updateProperty(type, prop, val, identifier);
+        return apiClient.updateProperty(type, prop, val, identifier, draftId);
       }
     }
   };

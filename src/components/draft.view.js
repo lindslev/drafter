@@ -1,4 +1,5 @@
 import React from 'react';
+import { findIndex } from 'lodash';
 
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -26,17 +27,22 @@ class DraftView extends React.Component {
     const { teams, nominations, players } = this.props.editState;
     const { stream, userChatMessage, captainNomination,
             captainBid, nominatedPlayer, lastBid, time, timerRunning } = this.props.runState;
-    const { bidOnNomination, setProperty, nominatePlayer } = this.props.runActions;
+    const { bidOnNomination, setProperty, nominatePlayer,
+            winPlayer } = this.props.runActions;
     const nominationOrder = this.getNominationOrder(teams, nominations);
+    const nextUp = nominations[findIndex(nominations, (n) => !n.is_done)] || {};
+    const nextUpTeam = teams[findIndex(teams, (t) => +t.id === +nextUp.teamId)];
     return (
       <div className="draft-view">
         <Chat
+          winPlayer={winPlayer}
           lastBid={lastBid}
           nominatedPlayer={nominatedPlayer}
           socket={this.props.socket}
           stream={stream}
           userChatMessage={userChatMessage}
           setProperty={setProperty}
+          nextUp={nextUpTeam}
           time={time} />
         <Bid
           timerRunning={timerRunning}
@@ -52,6 +58,7 @@ class DraftView extends React.Component {
           captainNomination={captainNomination}
           setProperty={setProperty} />
         <Teams
+          players={players}
           teams={teams || []} />
       </div>
     );

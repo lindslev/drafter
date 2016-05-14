@@ -1,6 +1,7 @@
 import React from 'react';
 import classnames from 'classnames';
 import moment from 'moment';
+import { findIndex } from 'lodash';
 
 class DraftChat extends React.Component {
   constructor(props) {
@@ -53,19 +54,28 @@ class DraftChat extends React.Component {
   }
 
   renderTopSection() {
-    const { userChatMessage, nominatedPlayer, time, lastBid } = this.props;
+    const { userChatMessage, nominatedPlayer, time,
+            lastBid, nextUp } = this.props;
     const localStorage = window.localStorage || localStorage;
     const isLoggedIn = localStorage.getItem('drafterUserId');
     const isCaptain = localStorage.getItem('drafterUserIsCaptain') === "true";
     const isAdmin = localStorage.getItem('drafterUserIsAdmin') === "true";
     const canChat = isLoggedIn && (isCaptain || isAdmin);
+    const waiting = time === 0;
     return (
       <div className="chat-top-section">
-        <div className="awaiting">
-          <p>{nominatedPlayer} <span className="timer">{`${time}s`}</span></p>
-          <p className="last-bid">{lastBid.coins} coins</p>
-        </div>
-        {canChat ? this.renderChatBox(userChatMessage): null}
+        { waiting ?
+          <div className="awaiting">
+            <p className="nominator">{(nextUp || {}).name}</p>
+            <p className="last-bid">is now nominating</p>
+          </div>
+          :
+          <div className="awaiting">
+            <p>{nominatedPlayer} <span className="timer">{`${time}s`}</span></p>
+            <p className="last-bid">{lastBid.coins} coins</p>
+          </div>
+        }
+        {canChat ? this.renderChatBox(userChatMessage) : null}
       </div>
     );
   }
