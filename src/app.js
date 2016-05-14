@@ -24,6 +24,7 @@ const store = createStore({});
 import initializeListeners from './socket';
 initializeListeners(socket, store);
 
+import Home from './components/home';
 import Page from './components/page';
 import AdminCreateView from './components/admin.create';
 import AdminEditView from './components/admin.edit';
@@ -39,7 +40,8 @@ const APP = (
   <Provider store={store}>
     <Router history={browserHistory} createElement={createElement}>
       <Route path='/' component={App}>
-        <IndexRoute component={DraftView} />
+        <IndexRoute component={Home} />
+        <Route path='auction/:id' component={DraftView} />
         <Route path='admin' component={Page}>
           <Route path='create' component={AdminCreateView} /> 
           <Route path='edit/:id' component={AdminEditView} /> 

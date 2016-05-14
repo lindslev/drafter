@@ -1,5 +1,5 @@
 import React from 'react';
-import { assign, filter, remove } from 'lodash';
+import { assign, filter, remove, sortBy } from 'lodash';
 
 class DraftTeams extends React.Component {
   constructor(props) {
@@ -10,9 +10,9 @@ class DraftTeams extends React.Component {
   }
 
   buildRosters(teams, players) {
-    const selectedPlayers = filter(players, (p) => {
+    const selectedPlayers = sortBy(filter(players, (p) => {
       return p.is_selected;
-    });
+    }), (p) => p.updatedAt);
     const teamsWithRosters = teams.map((team) => {
       const teamRoster = [];
       const teamHasPrelimPick = team.preliminary_pick.length > 0;
@@ -76,10 +76,10 @@ class DraftTeams extends React.Component {
     return (
       <div>
         <div className="row">
-          {northeast.map(this.renderTeam)}
+          {sortBy(northeast, (t) => t.name).map(this.renderTeam)}
         </div>
         <div className="row">
-          {atlantic.map(this.renderTeam)}
+          {sortBy(atlantic, (t) => t.name).map(this.renderTeam)}
         </div>
       </div>
     );
@@ -93,10 +93,10 @@ class DraftTeams extends React.Component {
     return (
       <div>
         <div className="row">
-          {central.map(this.renderTeam)}
+          {sortBy(central, (t) => t.name).map(this.renderTeam)}
         </div>
         <div className="row">
-          {pacific.map(this.renderTeam)}
+          {sortBy(pacific, (t) => t.name).map(this.renderTeam)}
         </div>
       </div>
     );

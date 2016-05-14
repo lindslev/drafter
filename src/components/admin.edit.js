@@ -15,15 +15,15 @@ class AdminEditView extends React.Component {
     this.renderTeams = this.renderTeams.bind(this);
     this.renderPlayers = this.renderPlayers.bind(this);
     this.renderPlayer = this.renderPlayer.bind(this);
-    this.renderNominations = this.renderNominations.bind(this);
-    this.renderNomination = this.renderNomination.bind(this);
-    this.renderPrivsEditor = this.renderPrivsEditor.bind(this);
-    this.renderDataEditor = this.renderDataEditor.bind(this);
-  }
+      this.renderNominations = this.renderNominations.bind(this);
+      this.renderNomination = this.renderNomination.bind(this);
+      this.renderPrivsEditor = this.renderPrivsEditor.bind(this);
+      this.renderDataEditor = this.renderDataEditor.bind(this);
+    }
 
-  componentWillMount() {
-    this.props.draftActions.loadDraft(this.props.routeParams.id);
-  }
+    componentWillMount() {
+      this.props.draftActions.loadDraft(this.props.routeParams.id);
+    }
 
   editData() {
     const { usernameForCaptaincyEdit, giveOrRemoveCaptaincy,
@@ -149,11 +149,11 @@ class AdminEditView extends React.Component {
     );
   }
 
-  renderNominations(nominations) {
+  renderNominations(nominationOrder) {
     return (
       <div className="col-md-4">
         <h5>NOMINATION ORDER</h5>
-        {(nominations || []).map(this.renderNomination)}
+        {(nominationOrder || []).map(this.renderNomination)}
       </div>
     );
   }
@@ -200,13 +200,12 @@ class AdminEditView extends React.Component {
   }
 
   render() {
-    const { teams, players, nominations, draft } = this.props.draftState;
+    const { teams, players, draft } = this.props.draftState;
     return (
       <div className="draft-edit-view">
         <div className="row">
           {this.renderTeams(teams)}
           {this.renderPlayers(players)}
-          {this.renderNominations(nominations)}
         </div>
         <div className="row">
           {this.renderPrivsEditor()}

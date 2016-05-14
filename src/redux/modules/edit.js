@@ -19,7 +19,7 @@ const handleLoadDraft = handlePromiseAction(
 
 const initialState = {
   teams: [],
-  nominations: [],
+  nominationOrder: [],
   players: [],
   history: null,
   usernameForCaptaincyEdit: null,

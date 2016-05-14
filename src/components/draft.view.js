@@ -16,22 +16,19 @@ class DraftView extends React.Component {
   }
 
   componentWillMount() {
-    this.props.editActions.loadDraft(7);
-  }
-
-  getNominationOrder(teams, nominations) {
-    return (nominations || []).slice(0, (teams || []).length);
+    this.props.editActions.loadDraft(this.props.routeParams.id);
   }
 
   render() {
-    const { teams, nominations, players } = this.props.editState;
+    const { teams, nominationOrder, players } = this.props.editState;
     const { stream, userChatMessage, captainNomination,
             captainBid, nominatedPlayer, lastBid, time, timerRunning } = this.props.runState;
     const { bidOnNomination, setProperty, nominatePlayer,
             winPlayer } = this.props.runActions;
-    const nominationOrder = this.getNominationOrder(teams, nominations);
-    const nextUp = nominations[findIndex(nominations, (n) => !n.is_done)] || {};
-    const nextUpTeam = teams[findIndex(teams, (t) => +t.id === +nextUp.teamId)];
+    const nextUp = {};
+    const nextUpTeam = {};
+    // const nextUp = nominations[findIndex(nominations, (n) => !n.is_done)] || {};
+    // const nextUpTeam = teams[findIndex(teams, (t) => +t.id === +nextUp.teamId)];
     return (
       <div className="draft-view">
         <Chat
@@ -51,8 +48,7 @@ class DraftView extends React.Component {
           lastBid={lastBid}
           nominatePlayer={nominatePlayer}
           nominatedPlayer={nominatedPlayer}
-          nominationOrder={nominationOrder}
-          nominations={nominations || []}
+          nominationOrder={nominationOrder || []}
           players={players || []}
           teams={teams || []}
           captainNomination={captainNomination}

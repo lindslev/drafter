@@ -85,7 +85,8 @@ class DraftBid extends React.Component {
   }
 
   nominate() {
-    const { currentNom } = this.getCurrentNomination(this.props.nominations);
+    // const { currentNom } = this.getCurrentNomination(this.props.nominations);
+    const currentNom = {};
     const { players, setProperty, captainNomination, nominatePlayer, captainBid } = this.props;
     const playerIndex = findIndex(players, (p) => p.name === captainNomination);
     const isSignedUp = playerIndex > -1;
@@ -107,7 +108,8 @@ class DraftBid extends React.Component {
   }
 
   bid(coins) {
-    const { currentNom } = this.getCurrentNomination(this.props.nominations);
+    // const { currentNom } = this.getCurrentNomination(this.props.nominations);
+    const currentNom = {};
     const { setProperty, teams, captainBid, bidOnNomination,
             nominatedPlayer, lastBid, timerRunning } = this.props;
     const haveEnoughCoins = this.enoughCoins();
@@ -137,7 +139,6 @@ class DraftBid extends React.Component {
   }
 
   renderAdminView() {
-    const { nominationOrder, nominations } = this.props;
     return (
       <div>
         <div className="admin-bidding-section">
@@ -146,7 +147,7 @@ class DraftBid extends React.Component {
         </div>
         <div className="nomination-order">
           <p>Nomination Order</p>
-          {this.renderNominationOrder(nominationOrder)}
+          {this.renderNominationOrder()}
         </div>
         {this.renderNominationDetails()}
       </div>
@@ -159,22 +160,23 @@ class DraftBid extends React.Component {
   }
 
   renderNominationDetails() {
-    const { nominations } = this.props;
-    const { currentNom, currentTeam, lastTeam, nextTeam } = this.getCurrentNomination(nominations);
-    const currentPickNum = currentNom ? currentNom.pick_number : 1;
-    const playersLeft = nominations.length - currentPickNum;
+    // const { nominations } = this.props;
+    // const { currentNom, currentTeam, lastTeam, nextTeam } = this.getCurrentNomination(nominations);
+    // const currentPickNum = currentNom ? currentNom.pick_number : 1;
+    // const playersLeft = nominations.length - currentPickNum;
     return (
       <div className="nomination-details">
-        <p><span className="bold">Last pick:</span> {lastTeam.name ? lastTeam.name : '---'}</p>
+        {/*<p><span className="bold">Last pick:</span> {lastTeam.name ? lastTeam.name : '---'}</p>
         <p><span className="bold">Nominating:</span> {currentTeam.name ? currentTeam.name : '---'}</p>
         <p className="smaller">(nomination #{currentPickNum} overall)</p>
         <p><span className="bold">Up next:</span> {nextTeam.name ? nextTeam.name : '---'}</p>
-        <p><span className="bold">{playersLeft}</span> picks left</p>
+        <p><span className="bold">{playersLeft}</span> picks left</p>*/}
       </div>
     );
   }
 
-  renderNominationOrder(order) {
+  renderNominationOrder() {
+    const { nominationOrder: order } = this.props;
     return (
       <div className="order-list">
         {order.map(this.renderNom)}
@@ -187,8 +189,10 @@ class DraftBid extends React.Component {
             captainBid, lastBid, timerRunning } = this.props;
     const localStorage = window.localStorage || localStorage;
     const teamId = this.teamId;
-    const { currentNom } = this.getCurrentNomination(nominations);
-    const nextNom = this.getCaptainsNextNom(nominations, +teamId);
+    // const { currentNom } = this.getCurrentNomination(nominations);
+    // const nextNom = this.getCaptainsNextNom(nominations, +teamId);
+    const currentNom = {};
+    const nextNom = {};
     const thisTurn = +currentNom.teamId === +teamId;
     let picksAway = thisTurn ? 'now' : `${+nextNom.pick_number - +currentNom.pick_number} picks away`;
     if ( !nextNom.pick_number ) picksAway = '---';
@@ -221,7 +225,7 @@ class DraftBid extends React.Component {
         </div>
         <div className="nomination-order">
           <p>Nomination Order</p>
-          {this.renderNominationOrder(nominationOrder)}
+          {this.renderNominationOrder()}
         </div>
         {this.renderNominationDetails()}
       </div>
@@ -229,19 +233,16 @@ class DraftBid extends React.Component {
   }
 
   renderSpectatorView() {
-    const { nominationOrder, nominations } = this.props;
-    const currentNomination = 1;
-    const playersLeft = nominations.length - currentNomination;
     return (
       <div>
         <div className="spectator-bidding-section">
-          <p className="spectator-title">MLTP Draft</p>
+          <img src="http://i.imgur.com/9SzGrqz.png" className="mltp-season-x"/>
         </div>
         <div className="nomination-order">
           <p>Nomination Order</p>
-          {this.renderNominationOrder(nominationOrder)}
+          {this.renderNominationOrder()}
         </div>
-        {this.renderNominationDetails(currentNomination, playersLeft)}
+        {this.renderNominationDetails()}
       </div>
     );
   }
