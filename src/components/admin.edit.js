@@ -15,10 +15,10 @@ class AdminEditView extends React.Component {
     this.renderTeams = this.renderTeams.bind(this);
     this.renderPlayers = this.renderPlayers.bind(this);
     this.renderPlayer = this.renderPlayer.bind(this);
-      this.renderNominations = this.renderNominations.bind(this);
-      this.renderNomination = this.renderNomination.bind(this);
-      this.renderPrivsEditor = this.renderPrivsEditor.bind(this);
-      this.renderDataEditor = this.renderDataEditor.bind(this);
+    this.renderNominations = this.renderNominations.bind(this);
+    this.renderNomination = this.renderNomination.bind(this);
+    this.renderPrivsEditor = this.renderPrivsEditor.bind(this);
+    this.renderDataEditor = this.renderDataEditor.bind(this);
     }
 
     componentWillMount() {
@@ -91,6 +91,7 @@ class AdminEditView extends React.Component {
     return (
       <div className="admin-team-view">
         <p>Name: {team.name}</p>
+        <p>ID: {team.id}</p>
         <p>Captain: {team.captain}</p>
         <p>NPC: {team.captain_is_npc.toString()}</p>
         <p>P.P.: {team.preliminary_pick}</p>
@@ -135,15 +136,14 @@ class AdminEditView extends React.Component {
   }
 
   renderNomination(nomination) {
-    const { start_time, playerId, teamId, is_done, pick_number } = nomination;
+    const { start_time, playerId, teamId, my_turn, pick_number } = nomination;
     const teamName = (this.getTeam(teamId) || {}).name;
     const playerName = (this.getPlayer(playerId) || {}).name;
     return (
       <div className="admin-nomination-view">
         <p>Team: {teamName}</p>
-        <p>Nomination time: {start_time ? new Date(start_time).toUTCString() : null}</p>
         <p>Player: {playerName}</p>
-        <p>Nomination complete: {is_done ? 'yes' : 'no'}</p>
+        <p>My turn: {my_turn ? 'yes' : 'no'}</p>
         <p>Pick number: {pick_number}</p>
       </div>
     );
@@ -177,7 +177,7 @@ class AdminEditView extends React.Component {
     const editableTypes = [
       { type: 'team', props: ['captain', 'captain_is_npc', 'preliminary_pick', 'division', 'name', 'tag_coins', 'keeper_coins'] },
       { type: 'player', props: ['name', 'current_bid_amount', 'current_bid_team', 'keeper_team', 'is_nominated', 'is_selected' ] },
-      { type: 'nomination', props: [ 'is_done', 'pick_number', 'team', 'player' ] }
+      { type: 'nomination', props: [ 'my_turn', 'roster_full', 'player' ] }
     ];
     const types = editableTypes.map((t) => {
       return <p>Type = {t.type} | props = {t.props.join(', ')}</p>;
@@ -200,12 +200,13 @@ class AdminEditView extends React.Component {
   }
 
   render() {
-    const { teams, players, draft } = this.props.draftState;
+    const { teams, players, draft, nominationOrder } = this.props.draftState;
     return (
       <div className="draft-edit-view">
         <div className="row">
           {this.renderTeams(teams)}
           {this.renderPlayers(players)}
+          {this.renderNominations(nominationOrder)}
         </div>
         <div className="row">
           {this.renderPrivsEditor()}

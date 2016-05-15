@@ -1,5 +1,5 @@
 import React from 'react';
-import { findIndex } from 'lodash';
+import { findIndex, sortBy, filter } from 'lodash';
 
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -10,6 +10,49 @@ import Bid from './draft.bid';
 import Teams from './draft.teams';
 import Chat from './draft.chat';
 
+function rotateArray(array, times) {
+  array = array.slice();
+  while(times--){
+    var temp = array.shift();
+    array.push(temp)
+  }
+  return array;
+}
+
+function getNext(nominations, pickNumber) {
+  let idx;
+  let nomination;
+  let originalNomination;
+  let tempNoms = nominations;
+  for (idx=0; idx<nominations.length; idx++) {
+    nomination = nominations[idx];
+    if (nomination.pick_number === pickNumber) {
+      break;
+    }
+  }
+
+  tempNoms = rotateArray(tempNoms, idx);
+  originalNomination = tempNoms.shift() || {};
+
+  let broke = false;
+
+  for (idx=0; idx<tempNoms.length; idx++) {
+    nomination = tempNoms[idx];
+    if (!nomination.roster_full) {
+      broke = true;
+      break;
+    }
+  }
+  if (!broke) {
+    if (originalNomination.roster_full) {
+      nomination = undefined;
+    } else {
+      nomination = originalNomination;
+    }
+  }
+  return nomination;
+}
+
 class DraftView extends React.Component {
   constructor(props) {
     super(props);
@@ -19,16 +62,28 @@ class DraftView extends React.Component {
     this.props.editActions.loadDraft(this.props.routeParams.id);
   }
 
+  getTeam(idOrName, teams) {
+    let team;
+    (teams || []).forEach((t) => {
+      if ( +idOrName === +t.id || idOrName === t.name ) {
+        team = t;
+      }
+    });
+    return team;
+  }
+
   render() {
     const { teams, nominationOrder, players } = this.props.editState;
     const { stream, userChatMessage, captainNomination,
             captainBid, nominatedPlayer, lastBid, time, timerRunning } = this.props.runState;
     const { bidOnNomination, setProperty, nominatePlayer,
             winPlayer } = this.props.runActions;
-    const nextUp = {};
-    const nextUpTeam = {};
-    // const nextUp = nominations[findIndex(nominations, (n) => !n.is_done)] || {};
-    // const nextUpTeam = teams[findIndex(teams, (t) => +t.id === +nextUp.teamId)];
+    const currentNomination = nominationOrder[findIndex(nominationOrder, (n) => n.my_turn)] || {};
+    const currentlyNominating = this.getTeam(currentNomination.teamId, teams);
+    const nextUp = getNext(nominationOrder, currentNomination.pick_number) || {};
+    const selectedPlayers = filter(players, (p) => p.is_selected);
+    const lastPlayerPicked = (sortBy(selectedPlayers, (p) => p.updatedAt).reverse())[0] || {};
+    const picksLeft = 48 - selectedPlayers.length;
     return (
       <div className="draft-view">
         <Chat
@@ -39,9 +94,13 @@ class DraftView extends React.Component {
           stream={stream}
           userChatMessage={userChatMessage}
           setProperty={setProperty}
-          nextUp={nextUpTeam}
+          nextUp={currentlyNominating}
           time={time} />
         <Bid
+          nextUp={nextUp}
+          picksLeft={picksLeft}
+          lastPlayerPicked={lastPlayerPicked}
+          currentNom={currentNomination}
           timerRunning={timerRunning}
           bidOnNomination={bidOnNomination}
           captainBid={captainBid}

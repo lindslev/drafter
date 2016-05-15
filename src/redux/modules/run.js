@@ -171,27 +171,71 @@ export function startTimer(type) {
   }
 }
 
+function rotateArray(array, times) {
+  array = array.slice();
+  while(times--){
+    var temp = array.shift();
+    array.push(temp)
+  }
+  return array;
+}
+
+function getNext(nominations, pickNumber) {
+  let idx;
+  let nomination;
+  let originalNomination;
+  let tempNoms = nominations;
+  for (idx=0; idx<nominations.length; idx++) {
+    nomination = nominations[idx];
+    if (nomination.pick_number === pickNumber) {
+      break;
+    }
+  }
+
+  tempNoms = rotateArray(tempNoms, idx);
+  originalNomination = tempNoms.shift();
+
+  let broke = false;
+
+  for (idx=0; idx<tempNoms.length; idx++) {
+    nomination = tempNoms[idx];
+    if (!nomination.roster_full) {
+      broke = true;
+      break;
+    }
+  }
+  if (!broke) {
+    if (originalNomination.roster_full) {
+      nomination = undefined;
+    } else {
+      nomination = originalNomination;
+    }
+  }
+  return nomination;
+}
+
 export function stopTimer() {
   return (dispatch, getState) => {
     const { runDraft, editDraft } = getState();
-    const { timerId, nominatedPlayer, lastBid } = runDraft;  
-    const { nominations } = editDraft;
-    const nomId = (nominations[findIndex(nominations, (n) => !n.is_done)] || {}).id;
+    const { timerId, nominatedPlayer, lastBid } = runDraft;
+    const { nominationOrder } = editDraft;
+    const currentNom = nominationOrder[findIndex(nominationOrder, (n) => n.my_turn)] || {};
+    const nextNominator = getNext(nominationOrder, currentNom.pick_number) || {};
     if (timerId !== null) {
       clearInterval(timerId);
       dispatch({ type: TIMER_STOPPED, payload: timerId });
-      dispatch(winPlayer(nomId, nominatedPlayer));
+      dispatch(winPlayer(currentNom.id, nominatedPlayer, nextNominator.id));
     }
   }
 }
 
 // potentially add handler that'll reset the state of lastBid here
-export function winPlayer(nomId, playerName) {
+export function winPlayer(nomId, playerName, nextNomId) {
   return {
     type: WIN_PLAYER,
     payload: {
       futureAPIPayload(apiClient) {
-        return apiClient.playerWon(nomId, playerName);
+        return apiClient.playerWon(nomId, playerName, nextNomId);
       }
     }
   };

@@ -90,9 +90,9 @@ export function bidOnPlayer(bidderId, coins, nomId, player) {
   });
 }
 
-export function playerWon(nomId, playerName) {
+export function playerWon(nomId, playerName, nextNomId) {
   return post(`/api/draft/win`, {
-    data: { nomId, playerName }
+    data: { nomId, playerName, nextNomId }
   });
 }
 

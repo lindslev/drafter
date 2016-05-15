@@ -1,13 +1,18 @@
+import { remove } from 'lodash';
+
 import { broadcast } from '../../server';
 import { createDraft, loadDraft, captaincyUpdate,
          playerUpdate, nominationUpdate, teamUpdate,
          updateNomination, updateAfterBid, teamWinsPlayer } from '../../db';
+
+let selectedPlayers = [];
 
 export function show(req, res) {
   loadDraft(Number(req.query.id || 1))
     .then((draft) => {
       res.status(200).json(draft);
     }).catch((err) => {
+      console.log('err', err);
       res.status(400).json(err);
     });
 }
@@ -20,6 +25,7 @@ export function create(req, res) {
   createDraft(seasonNumber, teams, tagCoins, keeperCoins, signupSheet, legacySheet, numSignups, draftRounds, manualDraftOrder).then((draftId) => {
     res.status(200).json({ draftId });
   }).catch((err) => {
+    console.log('err', err);
     res.status(400).json(err);
   });
 }
@@ -27,6 +33,9 @@ export function create(req, res) {
 export function updateProperty(req, res) {
   const updateFxns = { playerUpdate, teamUpdate, nominationUpdate };
   const { type, prop, val, identifier, draftId } = req.body || {};
+  if ( type === 'player' && prop === 'is_selected' && ( val === false || val === 'false' ) ) {
+    remove(selectedPlayers, (p) => identifier === p); 
+  }
   const updateFxn = updateFxns[`${type}Update`];
   updateFxn(prop, val, identifier).then(() => {
     broadcast.emit('admin-update', { draftId });
@@ -67,13 +76,11 @@ export function bidOnPlayer(req, res) {
   });
 }
 
-const completedNominations = [];
-
 export function playerWon(req, res) {
-  const { nomId, playerName } = req.body || {};
-  if ( completedNominations.indexOf(nomId) === -1 ) {
-    completedNominations.push(nomId);
-    teamWinsPlayer(nomId, playerName).then((data) => {
+  const { nomId, playerName, nextNomId } = req.body || {};
+  if ( selectedPlayers.indexOf(playerName) === -1 ) {
+    selectedPlayers.push(playerName);
+    teamWinsPlayer(nomId, playerName, nextNomId).then((data) => {
       const { teamName, coins, draftId } = data; 
       broadcast.emit('win', { playerName, teamName, coins, draftId });
       res.status(200).json({});
@@ -82,7 +89,7 @@ export function playerWon(req, res) {
       res.status(400).json(err);
     });
   } else {
-    res.status(400).json({ message: 'Already handled this nomination.' });
+    res.status(200).json({});
   }
 }
 

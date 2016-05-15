@@ -1,6 +1,6 @@
 import Sequelize from 'sequelize';
 import GS from 'google-sheets-node-api';
-import { shuffle } from 'lodash';
+import { shuffle, assign } from 'lodash';
 
 import crypto from 'crypto';
 const secret = 'unclerix';
@@ -78,7 +78,9 @@ const Player = sequelize.define('player', {
 const Nomination = sequelize.define('nomination', {
   is_done: Sequelize.BOOLEAN,
   start_time: Sequelize.DATE,
-  pick_number: Sequelize.INTEGER
+  pick_number: Sequelize.INTEGER,
+  my_turn: Sequelize.BOOLEAN,
+  roster_full: Sequelize.BOOLEAN
 });
 
 const User = sequelize.define('user', {
@@ -172,7 +174,8 @@ function findKeeperTeam(keepers, player, seasonNumber) {
   const playerName = (player.name || player.title || player[`season${seasonNumber}name`]).toLowerCase();
   let teamName;
   keepers.forEach((k) => {
-    if ( k[`s${seasonNumber}name`].toLowerCase() === playerName ) {
+    const name = (k[`S${seasonNumber} Name`] || '').toLowerCase();
+    if ( name === playerName ) {
       teamName = k.team;
     }
   });
@@ -219,12 +222,12 @@ function importSignups(signupSheetId, numSignups, keeperSheetId, seasonNumber, d
 
 function createNominationOrder(randomize, manualOrder, draftId, draftRounds) {
   return Team.findAll({ where: { draftId }}).then((teams) => {
-    const nominationOrder = randomize ? shuffle(teams) : manualOrder;
+    const order = randomize ? shuffle(teams) : manualOrder;
     let rounds = draftRounds > 0 && draftRounds < 10 ? draftRounds : 1;
     const nominationPromises = [];
     let pickNumberTracker = 0;
     while ( rounds-- ) {
-      nominationOrder.forEach((t, i) => {
+      order.forEach((t, i) => {
         nominationPromises.push(Nomination.create({
           teamId: t.id,
           is_done: false,
@@ -239,7 +242,7 @@ function createNominationOrder(randomize, manualOrder, draftId, draftRounds) {
 }
 
 export function loadDraft(id) {
-  let teams, draft, nominations, players;
+  let teams, draft, nominations, players, nominationOrder;
   return Draft.findOne({ where: { id }})
     .then((d) => {
       draft = d;
@@ -252,7 +255,8 @@ export function loadDraft(id) {
       return Nomination.findAll({ where: { draftId: id }, order: ['pick_number']});
     }).then((n) => {
       nominations = n;
-      return { teams, draft, nominations, players };
+      nominationOrder = nominations.slice(0,16);
+      return { teams, draft, nominations, players, nominationOrder };
     });
 }
 
@@ -337,22 +341,32 @@ export function updateAfterBid(teamId, coins, nomId, player) {
   });
 }
 
-export function teamWinsPlayer(nomId, playerName) {
+export function teamWinsPlayer(nomId, playerName, nextNominator) {
   let player;
   let draftId;
+  let pickNumber;
+  let winnerId;
+  let winnerRosterIsFull = false;
   let teamName, coins;
-  return Nomination.findOne({ where: { id: +nomId }}).then((n) => {
-    draftId = n.draftId;
-    return n.update({ is_done: true });
-  }).then(() => {
-    return Player.findOne({ where: { name: playerName }});
-  }).then((p) => {
+  return Player.findOne({ where: { name: playerName }}).then((p) => {
     if ( p.is_selected ) throw new Error('Already updated player.');
     player = p;
     return p.update({ is_selected: true });
   }).then(() => {
-    const winningTeamId = +player.current_bid_team;
-    return Team.findOne({ where: { id: winningTeamId }});
+    winnerId = +player.current_bid_team;
+    return Player.findAll({ where: {
+      current_bid_team: winnerId,
+      is_selected: true
+    }});
+  }).then((roster) => {
+    winnerRosterIsFull = roster.length === 3;
+    return Nomination.findOne({ where: { id: +nomId }});
+  }).then((n) => {
+    draftId = n.draftId;
+    pickNumber = n.pick_number;
+    return n.update({ my_turn: false, roster_full: winnerRosterIsFull });
+  }).then(() => {
+    return Team.findOne({ where: { id: winnerId }});
   }).then((t) => {
     teamName = t.name;
     let keeper_coins = t.keeper_coins;
@@ -369,6 +383,10 @@ export function teamWinsPlayer(nomId, playerName) {
     }
     tag_coins = tag_coins - cost;
     return t.update({ tag_coins, keeper_coins });
+  }).then(() => {
+    return Nomination.findOne({ where: { id: +nextNominator }});
+  }).then((n2) => {
+    return n2.update({ my_turn: true });
   }).then(() => {
     return { coins, teamName, draftId };
   });

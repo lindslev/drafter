@@ -29,6 +29,7 @@ class DraftBid extends React.Component {
     const { lastBid, timerRunning } = this.props;
     const didntMakeLastBid = +lastBid.teamId !== this.teamId;
     const enoughCoins = this.enoughCoins();
+    // NEED TO CHECK IF ROSTER IS FULL!!!!!!!!
     return myTurn && !timerRunning || (timerRunning && didntMakeLastBid && enoughCoins);
   }
 
@@ -46,16 +47,13 @@ class DraftBid extends React.Component {
 
   }
 
-  getCurrentNomination(nominations) {
-    const currentNomIndex = findIndex(nominations, (n) => !n.is_done);
-    if ( currentNomIndex === null || currentNomIndex === undefined ) return {};
-    const current = nominations[currentNomIndex] || {};
-    const last = nominations[currentNomIndex- 1];
-    const next = nominations[currentNomIndex + 1];
-    const currentTeam = this.getTeam((current || {}).teamId) || {};
-    const lastTeam = this.getTeam((last || {}).teamId) || {};
-    const nextTeam = this.getTeam((next || {}).teamId) || {};
-    return { currentNom: current, currentTeam, lastTeam, nextTeam };
+  getCurrentNomination() {
+    const { currentNom, lastPlayerPicked, nextUp } = this.props;
+    const currentTeam = this.getTeam((currentNom || {}).teamId) || {};
+    const lastTeamObj = this.getTeam(+lastPlayerPicked.current_bid_team) || {};
+    const lastTeam = lastPlayerPicked.name ? `${lastPlayerPicked.name} to ${lastTeamObj.name}` : '---';
+    const nextTeam = this.getTeam((nextUp || {}).teamId) || {};
+    return { currentNom, currentTeam, lastTeam, nextTeam };
   }
 
   getCaptainsNextNom(nominations, teamId) {
@@ -85,8 +83,7 @@ class DraftBid extends React.Component {
   }
 
   nominate() {
-    // const { currentNom } = this.getCurrentNomination(this.props.nominations);
-    const currentNom = {};
+    const { currentNom } = this.props;
     const { players, setProperty, captainNomination, nominatePlayer, captainBid } = this.props;
     const playerIndex = findIndex(players, (p) => p.name === captainNomination);
     const isSignedUp = playerIndex > -1;
@@ -108,8 +105,7 @@ class DraftBid extends React.Component {
   }
 
   bid(coins) {
-    // const { currentNom } = this.getCurrentNomination(this.props.nominations);
-    const currentNom = {};
+    const { currentNom } = this.props;
     const { setProperty, teams, captainBid, bidOnNomination,
             nominatedPlayer, lastBid, timerRunning } = this.props;
     const haveEnoughCoins = this.enoughCoins();
@@ -160,17 +156,17 @@ class DraftBid extends React.Component {
   }
 
   renderNominationDetails() {
-    // const { nominations } = this.props;
-    // const { currentNom, currentTeam, lastTeam, nextTeam } = this.getCurrentNomination(nominations);
-    // const currentPickNum = currentNom ? currentNom.pick_number : 1;
-    // const playersLeft = nominations.length - currentPickNum;
+    const { currentNom, currentTeam,
+            lastTeam, nextTeam } = this.getCurrentNomination();
+    const { picksLeft } = this.props;
+    const currentPickNum = currentNom ? currentNom.pick_number : 1;
     return (
       <div className="nomination-details">
-        {/*<p><span className="bold">Last pick:</span> {lastTeam.name ? lastTeam.name : '---'}</p>
+        <p><span className="bold">Last pick:</span> {lastTeam}</p>
         <p><span className="bold">Nominating:</span> {currentTeam.name ? currentTeam.name : '---'}</p>
-        <p className="smaller">(nomination #{currentPickNum} overall)</p>
+        <p className="smaller">(nomination #{48 - (picksLeft - 1)} overall)</p>
         <p><span className="bold">Up next:</span> {nextTeam.name ? nextTeam.name : '---'}</p>
-        <p><span className="bold">{playersLeft}</span> picks left</p>*/}
+        <p><span className="bold">{picksLeft}</span> picks left</p>
       </div>
     );
   }
@@ -186,16 +182,14 @@ class DraftBid extends React.Component {
 
   renderCaptainView() {
     const { nominationOrder, nominations, captainNomination,
-            captainBid, lastBid, timerRunning } = this.props;
+            captainBid, lastBid, timerRunning, currentNom } = this.props;
     const localStorage = window.localStorage || localStorage;
     const teamId = this.teamId;
-    // const { currentNom } = this.getCurrentNomination(nominations);
     // const nextNom = this.getCaptainsNextNom(nominations, +teamId);
-    const currentNom = {};
-    const nextNom = {};
+    // const nextNom = {};
     const thisTurn = +currentNom.teamId === +teamId;
-    let picksAway = thisTurn ? 'now' : `${+nextNom.pick_number - +currentNom.pick_number} picks away`;
-    if ( !nextNom.pick_number ) picksAway = '---';
+    // let picksAway = thisTurn ? 'now' : `${+nextNom.pick_number - +currentNom.pick_number} picks away`;
+    // if ( !nextNom.pick_number ) picksAway = '---';
     const nomDisabled = !thisTurn || timerRunning;
     const canBid = this.canBid(thisTurn);
     const autoBidClass = canBid ? `auto-bid` : `auto-bid-disabled`;
@@ -221,7 +215,7 @@ class DraftBid extends React.Component {
           <button disabled={!canBid} onClick={this.autoBid.bind(this, 1)} className={autoBidClass}>+1</button>
           <button disabled={!canBid} onClick={this.autoBid.bind(this, 2)} className={autoBidClass}>+2</button>
           <button disabled={!canBid} onClick={this.autoBid.bind(this, 3)} className={autoBidClass}>+3</button>
-          <p>Your next turn: {picksAway}</p>
+          {/*<p>Your next turn: {picksAway}</p>*/}
         </div>
         <div className="nomination-order">
           <p>Nomination Order</p>
