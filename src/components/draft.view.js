@@ -74,7 +74,7 @@ class DraftView extends React.Component {
 
   render() {
     const { teams, nominationOrder, players } = this.props.editState;
-    const { stream, userChatMessage, captainNomination,
+    const { stream, userChatMessage, captainNomination, bidBlock,
             captainBid, nominatedPlayer, lastBid, time, timerRunning } = this.props.runState;
     const { bidOnNomination, setProperty, nominatePlayer,
             winPlayer } = this.props.runActions;
@@ -97,6 +97,7 @@ class DraftView extends React.Component {
           nextUp={currentlyNominating}
           time={time} />
         <Bid
+          bidBlock={bidBlock}
           nextUp={nextUp}
           picksLeft={picksLeft}
           lastPlayerPicked={lastPlayerPicked}
@@ -108,6 +109,7 @@ class DraftView extends React.Component {
           nominatePlayer={nominatePlayer}
           nominatedPlayer={nominatedPlayer}
           nominationOrder={nominationOrder || []}
+          selectedPlayers={selectedPlayers}
           players={players || []}
           teams={teams || []}
           captainNomination={captainNomination}

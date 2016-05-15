@@ -1,6 +1,6 @@
 import Sequelize from 'sequelize';
 import GS from 'google-sheets-node-api';
-import { shuffle, assign } from 'lodash';
+import { remove, shuffle, assign } from 'lodash';
 
 import crypto from 'crypto';
 const secret = 'unclerix';
@@ -241,6 +241,8 @@ function createNominationOrder(randomize, manualOrder, draftId, draftRounds) {
   });
 }
 
+const selectedPlayers = [];
+
 export function loadDraft(id) {
   let teams, draft, nominations, players, nominationOrder;
   return Draft.findOne({ where: { id }})
@@ -292,6 +294,9 @@ export function nominationUpdate(prop, val, pick_number) {
 
 export function playerUpdate(prop, val, id) {
   return Player.findOne({ where: { id }}).then((player) => {
+    if ( prop === 'is_selected' && ( val === false || val === 'false' ) ) {
+      remove(selectedPlayers, (p) => p === player.name);
+    }
     return player.update({ [prop]: val });
   });
 }
@@ -348,46 +353,51 @@ export function teamWinsPlayer(nomId, playerName, nextNominator) {
   let winnerId;
   let winnerRosterIsFull = false;
   let teamName, coins;
-  return Player.findOne({ where: { name: playerName }}).then((p) => {
-    if ( p.is_selected ) throw new Error('Already updated player.');
-    player = p;
-    return p.update({ is_selected: true });
-  }).then(() => {
-    winnerId = +player.current_bid_team;
-    return Player.findAll({ where: {
-      current_bid_team: winnerId,
-      is_selected: true
-    }});
-  }).then((roster) => {
-    winnerRosterIsFull = roster.length === 3;
-    return Nomination.findOne({ where: { id: +nomId }});
-  }).then((n) => {
-    draftId = n.draftId;
-    pickNumber = n.pick_number;
-    return n.update({ my_turn: false, roster_full: winnerRosterIsFull });
-  }).then(() => {
-    return Team.findOne({ where: { id: winnerId }});
-  }).then((t) => {
-    teamName = t.name;
-    let keeper_coins = t.keeper_coins;
-    let tag_coins = t.tag_coins;
-    const isKeeper = +player.keeper_team === +player.current_bid_team;
-    let cost = player.current_bid_amount;
-    coins = player.current_bid_amount;
-    if ( isKeeper ) {
-      const canPayFullCost = keeper_coins - cost > 0;
-      const couldPay = canPayFullCost ? cost : keeper_coins;
-      const willPay = couldPay > 5 ? 5 : couldPay;
-      keeper_coins = keeper_coins - willPay;
-      cost = cost - willPay;
-    }
-    tag_coins = tag_coins - cost;
-    return t.update({ tag_coins, keeper_coins });
-  }).then(() => {
-    return Nomination.findOne({ where: { id: +nextNominator }});
-  }).then((n2) => {
-    return n2.update({ my_turn: true });
-  }).then(() => {
-    return { coins, teamName, draftId };
-  });
+  if ( selectedPlayers.indexOf(playerName) === -1 ) {
+    selectedPlayers.push(playerName); 
+    return Player.findOne({ where: { name: playerName }}).then((p) => {
+      if ( p.is_selected ) throw new Error('Already updated player.');
+      player = p;
+      return p.update({ is_selected: true });
+    }).then(() => {
+      winnerId = +player.current_bid_team;
+      return Player.findAll({ where: {
+        current_bid_team: winnerId,
+        is_selected: true
+      }});
+    }).then((roster) => {
+      winnerRosterIsFull = roster.length === 3;
+      return Nomination.findOne({ where: { id: +nomId }});
+    }).then((n) => {
+      draftId = n.draftId;
+      pickNumber = n.pick_number;
+      return n.update({ my_turn: false, roster_full: winnerRosterIsFull });
+    }).then(() => {
+      return Team.findOne({ where: { id: winnerId }});
+    }).then((t) => {
+      teamName = t.name;
+      let keeper_coins = t.keeper_coins;
+      let tag_coins = t.tag_coins;
+      const isKeeper = +player.keeper_team === +player.current_bid_team;
+      let cost = player.current_bid_amount;
+      coins = player.current_bid_amount;
+      if ( isKeeper ) {
+        const canPayFullCost = keeper_coins - cost > 0;
+        const couldPay = canPayFullCost ? cost : keeper_coins;
+        const willPay = couldPay > 5 ? 5 : couldPay;
+        keeper_coins = keeper_coins - willPay;
+        cost = cost - willPay;
+      }
+      tag_coins = tag_coins - cost;
+      return t.update({ tag_coins, keeper_coins });
+    }).then(() => {
+      return Nomination.findOne({ where: { id: +nextNominator }});
+    }).then((n2) => {
+      return n2.update({ my_turn: true });
+    }).then(() => {
+      return { coins, teamName, draftId };
+    });
+  } else {
+    throw new Error('player already handled');
+  }
 }

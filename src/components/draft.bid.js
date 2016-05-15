@@ -1,5 +1,5 @@
 import React from 'react';
-import { findIndex } from 'lodash';
+import { findIndex, filter } from 'lodash';
 
 class DraftBid extends React.Component {
   constructor(props) {
@@ -26,21 +26,29 @@ class DraftBid extends React.Component {
   }
 
   canBid(myTurn) {
-    const { lastBid, timerRunning } = this.props;
+    const { lastBid, timerRunning, selectedPlayers } = this.props;
     const didntMakeLastBid = +lastBid.teamId !== this.teamId;
-    const enoughCoins = this.enoughCoins();
-    // NEED TO CHECK IF ROSTER IS FULL!!!!!!!!
-    return myTurn && !timerRunning || (timerRunning && didntMakeLastBid && enoughCoins);
+    const enoughCoins = this.enoughCoins(0);
+    const rosterFull = this.rosterFull(this.teamId, selectedPlayers); 
+    return myTurn && !timerRunning && !rosterFull || (timerRunning && didntMakeLastBid && enoughCoins && !rosterFull);
   }
 
-  enoughCoins() {
-    const { nominatedPlayer, lastBid } = this.props;
+  rosterFull(teamId, selectedPlayers) {
+    const roster = filter(selectedPlayers, (p) => {
+      return +p.current_bid_team === teamId;
+    });
+    return roster.length === 3;
+  }
+
+  enoughCoins(myBid) {
+    const { nominatedPlayer, lastBid, timerRunning, captainNomination } = this.props;
     const myTeam = this.getTeam(this.teamId) || {};
-    const playerObj = this.getPlayer(nominatedPlayer) || {};
+    const playerToUse = timerRunning ? nominatedPlayer : captainNomination;
+    const playerObj = this.getPlayer(playerToUse) || {};
     const isKeeper = +playerObj.keeper_team === this.teamId;
     const coinsToSpend = isKeeper ? +myTeam.tag_coins + Math.min(5, +myTeam.keeper_coins || 0) : +myTeam.tag_coins;
-    const lastBidPrice = lastBid.coins;
-    return coinsToSpend > lastBidPrice;
+    const lastBidPrice = lastBid.coins || -1;
+    return coinsToSpend > lastBidPrice && +myBid <= coinsToSpend;
   }
 
   canNominate() {
@@ -83,16 +91,19 @@ class DraftBid extends React.Component {
   }
 
   nominate() {
-    const { currentNom } = this.props;
-    const { players, setProperty, captainNomination, nominatePlayer, captainBid } = this.props;
+    const { players, setProperty, captainNomination, 
+            nominatePlayer, captainBid, currentNom } = this.props;
     const playerIndex = findIndex(players, (p) => p.name === captainNomination);
     const isSignedUp = playerIndex > -1;
     const isNotSelected = !(players[playerIndex] || {}).is_selected;
-    if ( isSignedUp && isNotSelected ) {
+    const haveEnoughCoins = this.enoughCoins(captainBid); 
+    if ( isSignedUp && isNotSelected && haveEnoughCoins ) {
       const teamId = this.teamId;
       nominatePlayer(captainNomination, teamId, currentNom.id, captainBid);
       setProperty('captainBid', 0);
       setProperty('captainNomination', '');
+    } else if ( !haveEnoughCoins ) {
+      window.alert('Not enough coins');
     } else if ( !isSignedUp ) {
       window.alert('Player not found');
     } else if ( !isNotSelected ) {
@@ -108,11 +119,11 @@ class DraftBid extends React.Component {
     const { currentNom } = this.props;
     const { setProperty, teams, captainBid, bidOnNomination,
             nominatedPlayer, lastBid, timerRunning } = this.props;
-    const haveEnoughCoins = this.enoughCoins();
     const lastBidPrice = +lastBid.coins;
     const myBid = coins ? lastBidPrice + +coins : captainBid;
+    const haveEnoughCoins = this.enoughCoins(myBid);
     const didntMakeLastBid = +lastBid.teamId !== this.teamId;
-    const eligibleBid = myBid > lastBidPrice && haveEnoughCoins && didntMakeLastBid && timerRunning;
+    const eligibleBid = haveEnoughCoins && didntMakeLastBid && timerRunning;
     if ( eligibleBid ) {
       bidOnNomination(this.teamId, +myBid, +currentNom.id, nominatedPlayer);
     }
@@ -182,7 +193,7 @@ class DraftBid extends React.Component {
 
   renderCaptainView() {
     const { nominationOrder, nominations, captainNomination,
-            captainBid, lastBid, timerRunning, currentNom } = this.props;
+            captainBid, lastBid, timerRunning, currentNom, bidBlock } = this.props;
     const localStorage = window.localStorage || localStorage;
     const teamId = this.teamId;
     // const nextNom = this.getCaptainsNextNom(nominations, +teamId);
@@ -191,7 +202,7 @@ class DraftBid extends React.Component {
     // let picksAway = thisTurn ? 'now' : `${+nextNom.pick_number - +currentNom.pick_number} picks away`;
     // if ( !nextNom.pick_number ) picksAway = '---';
     const nomDisabled = !thisTurn || timerRunning;
-    const canBid = this.canBid(thisTurn);
+    const canBid = this.canBid(thisTurn) && !bidBlock;
     const autoBidClass = canBid ? `auto-bid` : `auto-bid-disabled`;
     return (
       <div>
