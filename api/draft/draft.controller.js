@@ -58,20 +58,28 @@ export function setNomination(req, res) {
   });
 }
 
+let lastBid = 0; 
+
 export function bidOnPlayer(req, res) {
   const { bidderId, coins, nomId, player } = req.body || {};
-  updateAfterBid(bidderId, coins, nomId, player).then((team) => { 
-    broadcast.emit('bid', { bidderId, coins, playerName: player, teamName: team.name });
-    res.status(200).json({});
-  }).catch((err) => {
-    console.log('err', err);
-    res.status(400).json(err);
-  });
+  if ( +coins > lastBid  ) {
+    lastBid = +coins;
+    updateAfterBid(bidderId, coins, nomId, player).then((team) => { 
+      broadcast.emit('bid', { bidderId, coins, playerName: player, teamName: team.name });
+      res.status(200).json({});
+    }).catch((err) => {
+      console.log('err', err);
+      res.status(400).json(err);
+    });
+  } else {
+    res.status(400).json({ too: 'low' });
+  }
 }
 
 export function playerWon(req, res) {
   const { nomId, playerName, nextNomId } = req.body || {};
   teamWinsPlayer(nomId, playerName, nextNomId).then((data) => {
+    lastBid = 0;
     const { teamName, coins, draftId } = data; 
     broadcast.emit('win', { playerName, teamName, coins, draftId });
     res.status(200).json({});

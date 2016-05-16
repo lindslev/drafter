@@ -123,7 +123,7 @@ class DraftBid extends React.Component {
     const myBid = coins ? lastBidPrice + +coins : captainBid;
     const haveEnoughCoins = this.enoughCoins(myBid);
     const didntMakeLastBid = +lastBid.teamId !== this.teamId;
-    const eligibleBid = haveEnoughCoins && didntMakeLastBid && timerRunning;
+    const eligibleBid = myBid > lastBidPrice && haveEnoughCoins && didntMakeLastBid && timerRunning;
     if ( eligibleBid ) {
       bidOnNomination(this.teamId, +myBid, +currentNom.id, nominatedPlayer);
     }
