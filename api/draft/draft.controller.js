@@ -1,7 +1,11 @@
+import { remove } from 'lodash';
+
 import { broadcast } from '../../server';
 import { createDraft, loadDraft, captaincyUpdate,
          playerUpdate, nominationUpdate, teamUpdate,
          updateNomination, updateAfterBid, teamWinsPlayer } from '../../db';
+
+let selectedPlayers = [];
 
 export function show(req, res) {
   loadDraft(Number(req.query.id || 1))
@@ -29,6 +33,9 @@ export function create(req, res) {
 export function updateProperty(req, res) {
   const updateFxns = { playerUpdate, teamUpdate, nominationUpdate };
   const { type, prop, val, identifier, draftId } = req.body || {};
+  if ( type === 'player' && prop === 'is_selected' && ( val === false || val === 'false' ) ) {
+    remove(selectedPlayers, (p) => identifier === p); 
+  }
   const updateFxn = updateFxns[`${type}Update`];
   updateFxn(prop, val, identifier).then(() => {
     broadcast.emit('admin-update', { draftId });
@@ -58,30 +65,10 @@ export function setNomination(req, res) {
   });
 }
 
-let lastBid = 0; 
-
 export function bidOnPlayer(req, res) {
   const { bidderId, coins, nomId, player } = req.body || {};
-  if ( +coins > lastBid  ) {
-    lastBid = +coins;
-    updateAfterBid(bidderId, coins, nomId, player).then((team) => { 
-      broadcast.emit('bid', { bidderId, coins, playerName: player, teamName: team.name });
-      res.status(200).json({});
-    }).catch((err) => {
-      console.log('err', err);
-      res.status(400).json(err);
-    });
-  } else {
-    res.status(400).json({ too: 'low' });
-  }
-}
-
-export function playerWon(req, res) {
-  const { nomId, playerName, nextNomId } = req.body || {};
-  teamWinsPlayer(nomId, playerName, nextNomId).then((data) => {
-    lastBid = 0;
-    const { teamName, coins, draftId } = data; 
-    broadcast.emit('win', { playerName, teamName, coins, draftId });
+  updateAfterBid(bidderId, coins, nomId, player).then((team) => { 
+    broadcast.emit('bid', { bidderId, coins, playerName: player, teamName: team.name });
     res.status(200).json({});
   }).catch((err) => {
     console.log('err', err);
@@ -89,7 +76,26 @@ export function playerWon(req, res) {
   });
 }
 
+export function playerWon(req, res) {
+  const { nomId, playerName, nextNomId } = req.body || {};
+  if ( selectedPlayers.indexOf(playerName) === -1 ) {
+    selectedPlayers.push(playerName);
+    teamWinsPlayer(nomId, playerName, nextNomId).then((data) => {
+      const { teamName, coins, draftId } = data; 
+      broadcast.emit('win', { playerName, teamName, coins, draftId });
+      res.status(200).json({});
+    }).catch((err) => {
+      console.log('err', err);
+      res.status(400).json(err);
+    });
+  } else {
+    res.status(200).json({});
+  }
+}
+
 export function setStatusOfDraft(req, res) {
+  // Draft.update
+  // If current nomination in flight, Nomination.update
   const { status } = req.body || {};
   console.log('statusset');
   res.status(200).json({});

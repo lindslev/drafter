@@ -1,5 +1,5 @@
 import React from 'react';
-import { findIndex, filter } from 'lodash';
+import { findIndex } from 'lodash';
 
 class DraftBid extends React.Component {
   constructor(props) {
@@ -14,54 +14,35 @@ class DraftBid extends React.Component {
     this.bid = this.bid.bind(this);
     this.getTeam = this.getTeam.bind(this);
     this.getPlayer = this.getPlayer.bind(this);
-    this.getCurrentNomination = this.getCurrentNomination.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleValueChange = this.handleValueChange.bind(this);
-    this.renderAdminView = this.renderAdminView.bind(this);
-    this.renderCaptainView = this.renderCaptainView.bind(this);
-    this.renderSpectatorView = this.renderSpectatorView.bind(this);
-    this.renderNom = this.renderNom.bind(this);
-    this.renderNominationOrder = this.renderNominationOrder.bind(this);
-    this.renderNominationDetails = this.renderNominationDetails.bind(this);
+    this.renderNominationActive = this.renderNominationActive.bind(this);
+    this.renderNominationWaiting = this.renderNominationWaiting.bind(this);
+    this.renderNominationForm = this.renderNominationForm.bind(this);
+    this.renderTopSection = this.renderTopSection.bind(this);
+    this.renderBiddingConsole = this.renderBiddingConsole.bind(this);
   }
 
   canBid(myTurn) {
-    const { lastBid, timerRunning, selectedPlayers } = this.props;
+    const { lastBid, timerRunning } = this.props;
     const didntMakeLastBid = +lastBid.teamId !== this.teamId;
-    const enoughCoins = this.enoughCoins(0);
-    const rosterFull = this.rosterFull(this.teamId, selectedPlayers); 
-    return myTurn && !timerRunning && !rosterFull || (timerRunning && didntMakeLastBid && enoughCoins && !rosterFull);
+    const enoughCoins = this.enoughCoins();
+    // NEED TO CHECK IF ROSTER IS FULL!!!!!!!!
+    return myTurn && !timerRunning || (timerRunning && didntMakeLastBid && enoughCoins);
   }
 
-  rosterFull(teamId, selectedPlayers) {
-    const roster = filter(selectedPlayers, (p) => {
-      return +p.current_bid_team === teamId;
-    });
-    return roster.length === 3;
-  }
-
-  enoughCoins(myBid) {
-    const { nominatedPlayer, lastBid, timerRunning, captainNomination } = this.props;
+  enoughCoins() {
+    const { nominatedPlayer, lastBid } = this.props;
     const myTeam = this.getTeam(this.teamId) || {};
-    const playerToUse = timerRunning ? nominatedPlayer : captainNomination;
-    const playerObj = this.getPlayer(playerToUse) || {};
+    const playerObj = this.getPlayer(nominatedPlayer) || {};
     const isKeeper = +playerObj.keeper_team === this.teamId;
     const coinsToSpend = isKeeper ? +myTeam.tag_coins + Math.min(5, +myTeam.keeper_coins || 0) : +myTeam.tag_coins;
-    const lastBidPrice = lastBid.coins || -1;
-    return coinsToSpend > lastBidPrice && +myBid <= coinsToSpend;
+    const lastBidPrice = lastBid.coins;
+    return coinsToSpend > lastBidPrice;
   }
 
   canNominate() {
 
-  }
-
-  getCurrentNomination() {
-    const { currentNom, lastPlayerPicked, nextUp } = this.props;
-    const currentTeam = this.getTeam((currentNom || {}).teamId) || {};
-    const lastTeamObj = this.getTeam(+lastPlayerPicked.current_bid_team) || {};
-    const lastTeam = lastPlayerPicked.name ? `${lastPlayerPicked.name} to ${lastTeamObj.name}` : '---';
-    const nextTeam = this.getTeam((nextUp || {}).teamId) || {};
-    return { currentNom, currentTeam, lastTeam, nextTeam };
   }
 
   getCaptainsNextNom(nominations, teamId) {
@@ -91,19 +72,16 @@ class DraftBid extends React.Component {
   }
 
   nominate() {
-    const { players, setProperty, captainNomination, 
-            nominatePlayer, captainBid, currentNom } = this.props;
+    const { currentNom } = this.props;
+    const { players, setProperty, captainNomination, nominatePlayer, captainBid } = this.props;
     const playerIndex = findIndex(players, (p) => p.name === captainNomination);
     const isSignedUp = playerIndex > -1;
     const isNotSelected = !(players[playerIndex] || {}).is_selected;
-    const haveEnoughCoins = this.enoughCoins(captainBid); 
-    if ( isSignedUp && isNotSelected && haveEnoughCoins ) {
+    if ( isSignedUp && isNotSelected ) {
       const teamId = this.teamId;
       nominatePlayer(captainNomination, teamId, currentNom.id, captainBid);
       setProperty('captainBid', 0);
       setProperty('captainNomination', '');
-    } else if ( !haveEnoughCoins ) {
-      window.alert('Not enough coins');
     } else if ( !isSignedUp ) {
       window.alert('Player not found');
     } else if ( !isNotSelected ) {
@@ -119,9 +97,9 @@ class DraftBid extends React.Component {
     const { currentNom } = this.props;
     const { setProperty, teams, captainBid, bidOnNomination,
             nominatedPlayer, lastBid, timerRunning } = this.props;
+    const haveEnoughCoins = this.enoughCoins();
     const lastBidPrice = +lastBid.coins;
     const myBid = coins ? lastBidPrice + +coins : captainBid;
-    const haveEnoughCoins = this.enoughCoins(myBid);
     const didntMakeLastBid = +lastBid.teamId !== this.teamId;
     const eligibleBid = myBid > lastBidPrice && haveEnoughCoins && didntMakeLastBid && timerRunning;
     if ( eligibleBid ) {
@@ -145,55 +123,8 @@ class DraftBid extends React.Component {
     setProperty(key, target.value);
   }
 
-  renderAdminView() {
-    return (
-      <div>
-        <div className="admin-bidding-section">
-          <button className="admin-pause">Pause draft</button>
-          <p className="admin-button-disclosure">This button will disable captains from continuing with bids and nominations. If used in the middle of a nomination, the nomination will be restarted.</p>
-        </div>
-        <div className="nomination-order">
-          <p>Nomination Order</p>
-          {this.renderNominationOrder()}
-        </div>
-        {this.renderNominationDetails()}
-      </div>
-    );
-  }
-
-  renderNom(n, i) {
-    const teamName = (this.getTeam(n.teamId) || {}).name;
-    return <p key={i}>{n.pick_number}. {teamName}</p>;
-  }
-
-  renderNominationDetails() {
-    const { currentNom, currentTeam,
-            lastTeam, nextTeam } = this.getCurrentNomination();
-    const { picksLeft } = this.props;
-    const currentPickNum = currentNom ? currentNom.pick_number : 1;
-    return (
-      <div className="nomination-details">
-        <p><span className="bold">Last pick:</span> {lastTeam}</p>
-        <p><span className="bold">Nominating:</span> {currentTeam.name ? currentTeam.name : '---'}</p>
-        <p className="smaller">(nomination #{48 - (picksLeft - 1)} overall)</p>
-        <p><span className="bold">Up next:</span> {nextTeam.name ? nextTeam.name : '---'}</p>
-        <p><span className="bold">{picksLeft}</span> picks left</p>
-      </div>
-    );
-  }
-
-  renderNominationOrder() {
-    const { nominationOrder: order } = this.props;
-    return (
-      <div className="order-list">
-        {order.map(this.renderNom)}
-      </div>
-    );
-  }
-
-  renderCaptainView() {
-    const { nominationOrder, nominations, captainNomination,
-            captainBid, lastBid, timerRunning, currentNom, bidBlock } = this.props;
+  renderBiddingConsole() {
+    const { nominations, captainBid, lastBid, currentNom } = this.props;
     const localStorage = window.localStorage || localStorage;
     const teamId = this.teamId;
     // const nextNom = this.getCaptainsNextNom(nominations, +teamId);
@@ -201,53 +132,83 @@ class DraftBid extends React.Component {
     const thisTurn = +currentNom.teamId === +teamId;
     // let picksAway = thisTurn ? 'now' : `${+nextNom.pick_number - +currentNom.pick_number} picks away`;
     // if ( !nextNom.pick_number ) picksAway = '---';
-    const nomDisabled = !thisTurn || timerRunning;
-    const canBid = this.canBid(thisTurn) && !bidBlock;
+    const canBid = this.canBid(thisTurn);
     const autoBidClass = canBid ? `auto-bid` : `auto-bid-disabled`;
     return (
-      <div>
-        <div className="captain-bidding-section">
-          <input
-            value={captainNomination}
-            onKeyDown={this.handleKeyDown.bind(this, 'nom')}
-            onChange={this.handleValueChange.bind(this, 'captainNomination')}
-            disabled={nomDisabled}
-            className="nomination-input"
-            type="text"
-            placeholder="nomination" />
-          <input
-            disabled={!canBid}
-            onKeyDown={this.handleKeyDown.bind(this, 'bid')}
-            value={captainBid}
-            onChange={this.handleValueChange.bind(this, 'captainBid')}
-            className="bid-input"
-            type="number"
-            placeholder="bid" />
-          <button disabled={!canBid} onClick={this.autoBid.bind(this, 1)} className={autoBidClass}>+1</button>
-          <button disabled={!canBid} onClick={this.autoBid.bind(this, 2)} className={autoBidClass}>+2</button>
-          <button disabled={!canBid} onClick={this.autoBid.bind(this, 3)} className={autoBidClass}>+3</button>
-          {/*<p>Your next turn: {picksAway}</p>*/}
-        </div>
-        <div className="nomination-order">
-          <p>Nomination Order</p>
-          {this.renderNominationOrder()}
-        </div>
-        {this.renderNominationDetails()}
+      <div className="bidding-console">
+        <input
+          disabled={!canBid}
+          onKeyDown={this.handleKeyDown.bind(this, 'bid')}
+          value={captainBid}
+          onChange={this.handleValueChange.bind(this, 'captainBid')}
+          className="bid-input"
+          type="number"
+          placeholder="bid" />
+        <button disabled={!canBid} onClick={this.autoBid.bind(this, 1)} className="bid-button">+1</button>
+        {/*<p>Your next turn: {picksAway}</p>*/}
       </div>
     );
   }
 
-  renderSpectatorView() {
+  renderNominationWaiting() {
+    const { nextUp } = this.props;
     return (
-      <div>
-        <div className="spectator-bidding-section">
-          <img src="http://i.imgur.com/9SzGrqz.png" className="mltp-season-x"/>
+      <div className="nom-wrapper">
+        <div className="nominator">{(nextUp || {}).name}</div>
+        <div className="nominating-text">is now nominating</div>
+      </div>
+    );
+  }
+
+  renderNominationForm() {
+    const { captainNomination } = this.props;
+    return (
+      <div className="nom-wrapper">
+        <div className="nom-player-label">Nominate a player</div>
+        <input
+          value={captainNomination}
+          onKeyDown={this.handleKeyDown.bind(this, 'nom')}
+          onChange={this.handleValueChange.bind(this, 'captainNomination')}
+          className="nominate-player"
+          type="text" />
+      </div>
+    );
+  }
+
+  renderNominationActive() {
+    const { nominatedPlayer, time, lastBid } = this.props;
+    return (
+      <div className="nom-wrapper">
+        <div className="nom-name">{nominatedPlayer}</div>
+        <div className="nom-data">
+          <span className="coins">
+            <i className="material-icons">monetization_on</i>
+            <span className="amount">{lastBid.coins < 10 ? "0" + lastBid.coins : lastBid.coins}</span>
+          </span>
+          <span className="time-remaining">
+            <i className="material-icons">schedule</i>
+            <span className="amount">{time < 10 ? "0" + time : time}</span>
+          </span>
         </div>
-        <div className="nomination-order">
-          <p>Nomination Order</p>
-          {this.renderNominationOrder()}
-        </div>
-        {this.renderNominationDetails()}
+      </div>
+    );
+  }
+
+  renderTopSection() {
+    let view = 'Waiting';
+    const { time, nextUp, timerRunning, currentNom } = this.props;
+    const waiting = time === 0;
+    const localStorage = window.localStorage || localStorage;
+    const teamId = this.teamId;
+    const thisTurn = +currentNom.teamId === +teamId;
+    const nomDisabled = !thisTurn || timerRunning;
+    if ( !waiting ) view = 'Active';
+    else if ( !nomDisabled ) view = 'Form';
+    const renderView = this[`renderNomination${view}`];
+
+    return (
+      <div className="current-nom">
+        {renderView()}
       </div>
     );
   }
@@ -256,15 +217,12 @@ class DraftBid extends React.Component {
     let view = 'Spectator';
     const localStorage = window.localStorage || localStorage;
     const isLoggedIn = localStorage.getItem('drafterUserId');
-    const isAdmin = localStorage.getItem('drafterUserIsAdmin') === "true";
     const isCaptain = localStorage.getItem('drafterUserIsCaptain') === "true";
-    if ( isLoggedIn && isCaptain ) view = 'Captain';
-    if ( isLoggedIn && isAdmin ) view = 'Admin';
-    const renderView = this[`render${view}View`];
 
     return (
-      <div className="draft-bid">
-        {renderView()}
+      <div className="nom-console nom-console-west">
+        {this.renderTopSection()}
+        {isLoggedIn && isCaptain ? this.renderBiddingConsole() : null}
       </div>
     );
   }
