@@ -25,7 +25,7 @@ export default function reducer(state = initialState, action = {}) {
   }
 }
 
-export function setProperty(property, value) { 
+export function setProperty(property, value) {
   return {
     type: SET_PROPERTY,
     payload: { [property]: value }

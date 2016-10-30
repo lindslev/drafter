@@ -1,6 +1,6 @@
 import Sequelize from 'sequelize';
 import GS from 'google-sheets-node-api';
-import { remove, shuffle, assign, findIndex } from 'lodash';
+import { shuffle, assign } from 'lodash';
 
 import crypto from 'crypto';
 const secret = 'unclerix';
@@ -174,7 +174,7 @@ function findKeeperTeam(keepers, player, seasonNumber) {
   const playerName = (player.name || player.title || player[`season${seasonNumber}name`]).toLowerCase();
   let teamName;
   keepers.forEach((k) => {
-    const name = (k[`s10name`]).toLowerCase(); // TO DO UNHARDCODE
+    const name = (k[`S${seasonNumber} Name`] || '').toLowerCase();
     if ( name === playerName ) {
       teamName = k.team;
     }
@@ -241,19 +241,23 @@ function createNominationOrder(randomize, manualOrder, draftId, draftRounds) {
   });
 }
 
-const selectedPlayers = [];
-
 export function loadDraft(id) {
-  return Promise.all([
-    Draft.findOne({ where: { id }}),
-    Team.findAll({ where: { draftId: id }}),
-    Player.findAll({ where: { draftId: id }}),
-    Nomination.findAll({ where: { draftId: id }, order: ['pick_number'] })
-  ]).then((results) => {
-    const [draft, teams, players, nominations] = results;
-    const nominationOrder = nominations.slice(0, 16);
-    return { teams, draft, nominations, players, nominationOrder };
-  });
+  let teams, draft, nominations, players, nominationOrder;
+  return Draft.findOne({ where: { id }})
+    .then((d) => {
+      draft = d;
+      return Team.findAll({ where: { draftId: id }});
+    }).then((t) => {
+      teams = t;
+      return Player.findAll({ where: { draftId: id }});
+    }).then((p) => {
+      players = p;
+      return Nomination.findAll({ where: { draftId: id }, order: ['pick_number']});
+    }).then((n) => {
+      nominations = n;
+      nominationOrder = nominations.slice(0,teams.length);
+      return { teams, draft, nominations, players, nominationOrder };
+    });
 }
 
 export function createUser(username, password) {
@@ -288,9 +292,6 @@ export function nominationUpdate(prop, val, pick_number) {
 
 export function playerUpdate(prop, val, id) {
   return Player.findOne({ where: { id }}).then((player) => {
-    if ( prop === 'is_selected' && ( val === false || val === 'false' ) ) {
-      remove(selectedPlayers, (p) => p === player.name);
-    }
     return player.update({ [prop]: val });
   });
 }
@@ -306,7 +307,7 @@ export function updateNomination(playerName, teamId, nomId, coins) {
   return sequelize.transaction((t) => {
     return Promise.all([
       Player.findOne({ where: { name: playerName }}, { transaction: t }),
-      Nomination.findOne({ where: { id: +nomId }}, { transaction: t }),
+      Nomination.findOne({ where: { id: nomId }}, { transaction: t }),
       Team.findOne({ where: { id: teamId }}, { transaction: t })
     ])
     .then((results) => {
@@ -333,122 +334,60 @@ export function updateNomination(playerName, teamId, nomId, coins) {
 }
 
 export function updateAfterBid(teamId, coins, nomId, player) {
-  let teamToReturn;
-  return sequelize.transaction((t) => {
-    return Promise.all([
-      Player.findOne({ where: { name: player }}, { transaction: t }),
-      Team.findOne({ where: { id: +teamId }}, { transaction: t })
-    ]).then((results) => {
-      const [player, team] = results;
-      teamToReturn = team;
-      return player.update(
-        { current_bid_team: +teamId,
-          current_bid_amount: coins },
-        { transaction: t }
-      );
-    }).then(() => teamToReturn);
+  return Player.findOne({ where: { name: player }}).then((p) => {
+    return p.update({ current_bid_team: +teamId, current_bid_amount: coins });
+  }).then(() => {
+    return Team.findOne({ where: { id: +teamId }});
   });
 }
 
 export function teamWinsPlayer(nomId, playerName, nextNominator) {
-  console.log('NOMID', nomId, nextNominator);
-  // let player, draftId, pickNumber, winnerId, winnerRosterIsFull, teamName, coins;
-  // const didntHandlePlayerYet = selectedPlayers.indexOf(playerName) === -1;
-  // if ( didntHandlePlayerYet ) {
-  //   selectedPlayers.push(playerName);
-  //   return Player.findOne({ where: { name: playerName }}).then((p) => {
-  //     player = p;
-  //     winnerId = +player.current_bid_team;
-  //     return Promise.all([
-  //       p.update({ is_selected: true }),
-  //       Player.findAll({ where: { current_bid_team: winnerId, is_selected: true }}),
-  //       Nomination.findOne({ where: { id: +nomId }}),
-  //       Team.findOne({ where: { id: winnerId }}),
-  //       Nomination.findAll({ where: { teamId: winnerId }})
-  //     ])
-  //   }).then((results) => {
-  //       let [updatedPlayer, winningRoster, thisNomination, winningTeam, winningTeamNominations, nextNomination] = results;
-  //       const theWinningTeam = winningTeam.toJSON();
-  //       const rosterFull = winningRoster.length + 1 >= 3;
-  //       const rosterFullNomination = winningTeamNominations[findIndex(winningTeamNominations, (n) => n.pick_number <= 16)];
-  //       teamName = theWinningTeam.name;
-  //       let keeper_coins = theWinningTeam.keeper_coins;
-  //       let tag_coins = theWinningTeam.tag_coins;
-  //       const isKeeper = +player.keeper_team === +player.current_bid_team;
-  //       let cost = player.current_bid_amount;
-  //       coins = player.current_bid_amount;
-  //       if ( isKeeper ) {
-  //         const canPayFullCost = keeper_coins - cost > 0;
-  //         const couldPay = canPayFullCost ? cost : keeper_coins;
-  //         const willPay = couldPay > 5 ? 5 : couldPay;
-  //         keeper_coins = keeper_coins - willPay;
-  //         cost = cost - willPay;
-  //       }
-  //       tag_coins = tag_coins - cost;
-  //       draftId = thisNomination.draftId;
-  //       return Promise.all([
-  //         thisNomination.update({ my_turn: false }),
-  //         winningTeam.update({ tag_coins, keeper_coins }),
-  //         rosterFullNomination.update({ roster_full: rosterFull })
-  //       ]);
-  //     }).then(() => { return { coins, teamName, draftId  }; });
-  // } else {
-  //   return Promise.reject(); 
-  // }
   let player;
   let draftId;
   let pickNumber;
   let winnerId;
   let winnerRosterIsFull = false;
   let teamName, coins;
-  if ( selectedPlayers.indexOf(playerName) === -1 ) {
-    selectedPlayers.push(playerName); 
-    return Player.findOne({ where: { name: playerName }}).then((p) => {
-      player = p;
-      return p.update({ is_selected: true });
-    }).then(() => {
-      winnerId = +player.current_bid_team;
-      return Player.findAll({ where: {
-        current_bid_team: winnerId,
-        is_selected: true
-      }});
-    }).then((roster) => {
-      winnerRosterIsFull = roster.length === 3;
-      return Nomination.findOne({ where: { id: +nomId }});
-    }).then((n) => {
-      draftId = n.draftId;
-      pickNumber = n.pick_number;
-      return n.update({ my_turn: false });
-    }).then(() => {
-      return Team.findOne({ where: { id: winnerId }});
-    }).then((t) => {
-      teamName = t.name;
-      let keeper_coins = t.keeper_coins;
-      let tag_coins = t.tag_coins;
-      const isKeeper = +player.keeper_team === +player.current_bid_team;
-      let cost = player.current_bid_amount;
-      coins = player.current_bid_amount;
-      if ( isKeeper ) {
-        const canPayFullCost = keeper_coins - cost > 0;
-        const couldPay = canPayFullCost ? cost : keeper_coins;
-        const willPay = couldPay > 5 ? 5 : couldPay;
-        keeper_coins = keeper_coins - willPay;
-        cost = cost - willPay;
-      }
-      tag_coins = tag_coins - cost;
-      return t.update({ tag_coins, keeper_coins });
-    }).then(() => {
-      return Nomination.findOne({ where: { id: +nextNominator }});
-    }).then((n2) => {
-      return n2.update({ my_turn: true });
-    }).then(() => {
-      return Nomination.findOne({ where: { teamId: winnerId }});
-    }).then((n3) => {
-      return n3.update({ roster_full: winnerRosterIsFull });
-    }).then(() => {
-      return { coins, teamName, draftId };
-    });
-  } else {
-    return Promise.reject();
-  }
+  return Player.findOne({ where: { name: playerName }}).then((p) => {
+    if ( p.is_selected ) throw new Error('Already updated player.');
+    player = p;
+    return p.update({ is_selected: true });
+  }).then(() => {
+    winnerId = +player.current_bid_team;
+    return Player.findAll({ where: {
+      current_bid_team: winnerId,
+      is_selected: true
+    }});
+  }).then((roster) => {
+    winnerRosterIsFull = roster.length === 3;
+    return Nomination.findOne({ where: { id: +nomId }});
+  }).then((n) => {
+    draftId = n.draftId;
+    pickNumber = n.pick_number;
+    return n.update({ my_turn: false, roster_full: winnerRosterIsFull });
+  }).then(() => {
+    return Team.findOne({ where: { id: winnerId }});
+  }).then((t) => {
+    teamName = t.name;
+    let keeper_coins = t.keeper_coins;
+    let tag_coins = t.tag_coins;
+    const isKeeper = +player.keeper_team === +player.current_bid_team;
+    let cost = player.current_bid_amount;
+    coins = player.current_bid_amount;
+    if ( isKeeper ) {
+      const canPayFullCost = keeper_coins - cost > 0;
+      const couldPay = canPayFullCost ? cost : keeper_coins;
+      const willPay = couldPay > 5 ? 5 : couldPay;
+      keeper_coins = keeper_coins - willPay;
+      cost = cost - willPay;
+    }
+    tag_coins = tag_coins - cost;
+    return t.update({ tag_coins, keeper_coins });
+  }).then(() => {
+    return Nomination.findOne({ where: { id: +nextNominator }});
+  }).then((n2) => {
+    return n2.update({ my_turn: true });
+  }).then(() => {
+    return { coins, teamName, draftId };
+  });
 }

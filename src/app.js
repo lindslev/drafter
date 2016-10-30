@@ -43,8 +43,8 @@ const APP = (
         <IndexRoute component={Home} />
         <Route path='auction/:id' component={DraftView} />
         <Route path='admin' component={Page}>
-          <Route path='create' component={AdminCreateView} /> 
-          <Route path='edit/:id' component={AdminEditView} /> 
+          <Route path='create' component={AdminCreateView} />
+          <Route path='edit/:id' component={AdminEditView} />
         </Route>
         <Route path='login' component={UserLogin} />
       </Route>

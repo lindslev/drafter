@@ -16,7 +16,7 @@ class DraftTeams extends React.Component {
     const teamsWithRosters = teams.map((team) => {
       const teamRoster = [];
       const teamHasPrelimPick = team.preliminary_pick.length > 0;
-      teamRoster.push({ name: team.captain, isCaptain: true });
+      teamRoster.push({ name: team.captain, isCaptain: true, isNPC: teamHasPrelimPick });
       if ( teamHasPrelimPick ) {
         teamRoster.push({ name: team.preliminary_pick, isPreliminaryPick: true });
       }
@@ -31,24 +31,31 @@ class DraftTeams extends React.Component {
     return teamsWithRosters;
   }
 
-  renderRosterSpot(player) {
-    let className = 'player-cost';
-    if ( player.isCaptain ) className = 'player-captain';
-    if ( player.isPreliminaryPick ) className = 'player-prelim';
+  renderRosterSpot(player, i) {
+    let playerClass = 'team-row';
+    if ( player.isNPC ) playerClass += ' player-npc';
+    if ( player.isCaptain ) playerClass += ' player-captain';
+    if ( player.isPreliminaryPick ) playerClass += ' player-npc-pick';
     return (
-      <div className="roster-spot">
-        <span className="player-name">{player.name}</span>
-        <span className={className}>{player.current_bid_amount}</span>
+      <div className={playerClass} key={i}>
+        <div className="player-name">{player.name}</div>
+        <div className="player-price">
+          { player.isCaptain || player.isPreliminaryPick ?
+            <i className="material-icons">star</i>
+            :
+            player.current_bid_amount
+          }
+        </div>
       </div>
     );
   }
 
   renderTeam(team, i) {
     const east = team.division === 'Northeast' || team.division === 'Atlantic';
-    const className=`col-md-3 ${east ? 'east-team' : 'west-team'}`;
+    const className=`card ${east ? 'team-east' : 'team-west'}`;
     const hasPrelimPick = team.captain_is_npc;
     const roster = team.roster;
-    const fullRosterLength = hasPrelimPick ? 5 : 4;
+    const fullRosterLength = hasPrelimPick ? 6 : 5;
     const rosterLength = roster.length;
     let spacesToFill = fullRosterLength - rosterLength;
     while ( spacesToFill-- ) {
@@ -56,14 +63,15 @@ class DraftTeams extends React.Component {
     }
     return (
       <div className={className} key={i}>
-        <div className="team-title">
-          {team.name}
-          <br/>
-          {team.tag_coins} ({team.keeper_coins})
+        <div className="team-header">
+          <div className="team-name">{team.name}</div>
+          <div className="team-money">
+            <div className="coins">{team.tag_coins}</div>
+            <div className="separator"> · </div>
+            <div className="keepers">{team.keeper_coins}</div>
+          </div>
         </div>
-        <div className="roster-spots">
-          {roster.map(this.renderRosterSpot)}
-        </div>
+        {roster.map(this.renderRosterSpot)}
       </div>
     );
   }
@@ -75,10 +83,10 @@ class DraftTeams extends React.Component {
     });
     return (
       <div>
-        <div className="row">
+        <div className="draft-row">
           {sortBy(northeast, (t) => t.name).map(this.renderTeam)}
         </div>
-        <div className="row">
+        <div className="draft-row">
           {sortBy(atlantic, (t) => t.name).map(this.renderTeam)}
         </div>
       </div>
@@ -92,10 +100,10 @@ class DraftTeams extends React.Component {
     });
     return (
       <div>
-        <div className="row">
+        <div className="draft-row">
           {sortBy(central, (t) => t.name).map(this.renderTeam)}
         </div>
-        <div className="row">
+        <div className="draft-row">
           {sortBy(pacific, (t) => t.name).map(this.renderTeam)}
         </div>
       </div>
@@ -110,10 +118,10 @@ class DraftTeams extends React.Component {
       return t.division === 'Northeast' || t.division === 'Atlantic';
     });
     return (
-      <div className="draft-teams">
+      <article className="main">
         {this.renderEast(east)}
         {this.renderWest(west)}
-      </div>
+      </article>
     );
   }
 }

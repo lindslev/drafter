@@ -14,18 +14,6 @@ const TIMER_TICK = 'TIMER_TICK';
 const TIMER_STARTED = 'TIMER_STARTED';
 const TIMER_STOPPED = 'TIMER_STOPPED';
 
-const handleBidding = handlePromiseAction(
-  (state, action) => {
-    return assign({}, state, { bidBlock: true })
-  },
-  (state, action) => {
-    return assign({}, state, { bidBlock: false })
-  },
-  (state, action) => {
-    return assign({}, state, { bidBlock: false })
-  }
-);
-
 function handleChatMessage(state, { payload }) {
   const newStream = state.stream;
   newStream.unshift(payload);
@@ -66,8 +54,7 @@ function handleTimerStop(state, { payload }) {
     timerId: null,
     timerRunning: false,
     time: 0,
-    lastBid: {},
-    captainBid: 0
+    lastBid: {}
   });
 }
 
@@ -80,8 +67,7 @@ const initialState = {
   lastBid: {},
   timerRunning: false,
   timerId: null,
-  time: 0,
-  bidBlock: false
+  time: 0
 };
 
 export default function reducer(state = initialState, action = {}) {
@@ -92,8 +78,6 @@ export default function reducer(state = initialState, action = {}) {
     return handleChatMessage(state, action);
   case PLAYER_NOMINATED:
     return handlePlayerNominated(state, action);
-  case BID:
-    return handleBidding(state, action);
   case BID_MADE:
     return handleBidMade(state, action);
   case TIMER_TICK:
@@ -245,6 +229,7 @@ export function stopTimer() {
   }
 }
 
+// potentially add handler that'll reset the state of lastBid here
 export function winPlayer(nomId, playerName, nextNomId) {
   return {
     type: WIN_PLAYER,
@@ -255,3 +240,12 @@ export function winPlayer(nomId, playerName, nextNomId) {
     }
   };
 }
+
+// to do:
+// captain makes nomination
+// captain bids
+// nomination ends / player goes to team
+// admin pauses / resumes draft
+//
+// done:
+// captain / admin chats
