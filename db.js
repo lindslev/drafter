@@ -171,10 +171,10 @@ function isLegacyTeam(keepers, name) {
 }
 
 function findKeeperTeam(keepers, player, seasonNumber) {
-  const playerName = (player.name || player.title || player[`season${seasonNumber}name`]).toLowerCase();
+  const playerName = (player[`s11name`]).toLowerCase();
   let teamName;
   keepers.forEach((k) => {
-    const name = (k[`s10name`]).toLowerCase(); // TO DO UNHARDCODE
+    const name = (k[`s11name`]).toLowerCase(); // TO DO UNHARDCODE
     if ( name === playerName ) {
       teamName = k.team;
     }
@@ -208,7 +208,7 @@ function importSignups(signupSheetId, numSignups, keeperSheetId, seasonNumber, d
           }
         }).then(() => {
           return Player.create({
-            name: player.name || player.title || player[`season${seasonNumber}name`],
+            name: player[`s11name`],
             current_bid_amount: 0,
             current_bid_team: null,
             keeper_team: playerTeamId,
@@ -251,7 +251,7 @@ export function loadDraft(id) {
     Nomination.findAll({ where: { draftId: id }, order: ['pick_number'] })
   ]).then((results) => {
     const [draft, teams, players, nominations] = results;
-    const nominationOrder = nominations.slice(0, 16);
+    const nominationOrder = nominations.slice(0, teams.length);
     return { teams, draft, nominations, players, nominationOrder };
   });
 }
@@ -393,7 +393,7 @@ export function teamWinsPlayer(nomId, playerName, nextNominator) {
   //       ]);
   //     }).then(() => { return { coins, teamName, draftId  }; });
   // } else {
-  //   return Promise.reject(); 
+  //   return Promise.reject();
   // }
   let player;
   let draftId;
@@ -402,7 +402,7 @@ export function teamWinsPlayer(nomId, playerName, nextNominator) {
   let winnerRosterIsFull = false;
   let teamName, coins;
   if ( selectedPlayers.indexOf(playerName) === -1 ) {
-    selectedPlayers.push(playerName); 
+    selectedPlayers.push(playerName);
     return Player.findOne({ where: { name: playerName }}).then((p) => {
       player = p;
       return p.update({ is_selected: true });

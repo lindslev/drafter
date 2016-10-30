@@ -58,13 +58,13 @@ export function setNomination(req, res) {
   });
 }
 
-let lastBid = 0; 
+let lastBid = 0;
 
 export function bidOnPlayer(req, res) {
   const { bidderId, coins, nomId, player } = req.body || {};
   if ( +coins > lastBid  ) {
     lastBid = +coins;
-    updateAfterBid(bidderId, coins, nomId, player).then((team) => { 
+    updateAfterBid(bidderId, coins, nomId, player).then((team) => {
       broadcast.emit('bid', { bidderId, coins, playerName: player, teamName: team.name });
       res.status(200).json({});
     }).catch((err) => {
@@ -80,7 +80,7 @@ export function playerWon(req, res) {
   const { nomId, playerName, nextNomId } = req.body || {};
   teamWinsPlayer(nomId, playerName, nextNomId).then((data) => {
     lastBid = 0;
-    const { teamName, coins, draftId } = data; 
+    const { teamName, coins, draftId } = data;
     broadcast.emit('win', { playerName, teamName, coins, draftId });
     res.status(200).json({});
   }).catch((err) => {

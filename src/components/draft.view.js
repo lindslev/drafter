@@ -7,6 +7,7 @@ import * as editActions from '../redux/modules/edit';
 import * as runActions from '../redux/modules/run';
 
 import Bid from './draft.bid';
+import Info from './draft.info';
 import Teams from './draft.teams';
 import Chat from './draft.chat';
 
@@ -86,37 +87,47 @@ class DraftView extends React.Component {
     const picksLeft = 48 - selectedPlayers.length;
     return (
       <div className="draft-view">
-        <Chat
-          winPlayer={winPlayer}
-          lastBid={lastBid}
-          nominatedPlayer={nominatedPlayer}
-          socket={this.props.socket}
-          stream={stream}
-          userChatMessage={userChatMessage}
-          setProperty={setProperty}
-          nextUp={currentlyNominating}
-          time={time} />
-        <Bid
-          bidBlock={bidBlock}
+        <Info
           nextUp={nextUp}
           picksLeft={picksLeft}
           lastPlayerPicked={lastPlayerPicked}
           currentNom={currentNomination}
-          timerRunning={timerRunning}
-          bidOnNomination={bidOnNomination}
-          captainBid={captainBid}
-          lastBid={lastBid}
-          nominatePlayer={nominatePlayer}
-          nominatedPlayer={nominatedPlayer}
           nominationOrder={nominationOrder || []}
           selectedPlayers={selectedPlayers}
-          players={players || []}
-          teams={teams || []}
-          captainNomination={captainNomination}
-          setProperty={setProperty} />
+          teams={teams || []} />
         <Teams
           players={players}
           teams={teams || []} />
+        <aside className="right">
+          <Bid
+            bidBlock={bidBlock}
+            currentNom={currentNomination}
+            timerRunning={timerRunning}
+            bidOnNomination={bidOnNomination}
+            captainBid={captainBid}
+            lastBid={lastBid}
+            nominatePlayer={nominatePlayer}
+            nominatedPlayer={nominatedPlayer}
+            nominationOrder={nominationOrder || []}
+            selectedPlayers={selectedPlayers}
+            players={players || []}
+            teams={teams || []}
+            captainNomination={captainNomination}
+            setProperty={setProperty}
+            time={time}
+            nextUp={currentlyNominating} />
+          <Chat
+            winPlayer={winPlayer}
+            socket={this.props.socket}
+            stream={stream}
+            userChatMessage={userChatMessage}
+            setProperty={setProperty}
+            nominationOrder={nominationOrder || []}
+            captainNomination={captainNomination}
+            captainBid={captainBid}
+            timerRunning={timerRunning}
+            currentNom={currentNomination} />
+        </aside>
       </div>
     );
   }

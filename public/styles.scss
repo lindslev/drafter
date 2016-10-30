@@ -70,10 +70,10 @@ input {
   }
 }
 
-input[type=number]::-webkit-inner-spin-button, 
-input[type=number]::-webkit-outer-spin-button { 
-  -webkit-appearance: none; 
-  margin: 0; 
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .draft-create-view {
@@ -94,7 +94,7 @@ input[type=number]::-webkit-outer-spin-button {
   input[type=text] {
     width: 500px;
   }
-  
+
   .add-teams {
     margin-top: 10px;
     font-size: 14px;
@@ -227,7 +227,7 @@ button {
     width: 310px;
     float: right;
     background: $light-gray;
-    color: black; 
+    color: black;
     p {
       margin-bottom: 2px;
     }
@@ -266,7 +266,7 @@ button {
   float: left;
   border: 1px solid $dark-blue;
   border-bottom: 0px;
-  
+
   .row {
     border-bottom: 1px solid $dark-blue;
   }
@@ -312,7 +312,7 @@ button {
       }
     }
   }
-  
+
   .east-team {
     background: $east;
   }

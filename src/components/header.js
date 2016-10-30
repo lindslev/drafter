@@ -21,7 +21,7 @@ class Header extends React.Component {
       window.location = '/login';
     }
   }
-  
+
   render() {
     return (
       <div className="header">
