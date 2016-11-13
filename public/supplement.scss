@@ -82,7 +82,6 @@ aside.right {
 aside.left {
   background: #383d40;
   width: calc(15% + 10rem);
-  color: rgba(255, 255, 255, 0.85);
 }
 
 article.main {
@@ -98,6 +97,11 @@ aside.right {
 
 /* Left sidebar */
 
+aside.left {
+  color: rgba(255, 255, 255, 0.85);
+  overflow-y: auto;
+}
+
 .left > div + div {
   border-top: 1px solid #44484b;
 }
@@ -112,6 +116,12 @@ aside.right {
   vertical-align: middle;
   font-size: 1.6rem;
   font-weight: 600;
+  color: inherit;
+  text-decoration: none;
+}
+
+.userinfo a.username:hover {
+  color: rgba(255, 255, 255, 0.65);
 }
 
 .userinfo .prefs {
@@ -132,7 +142,7 @@ aside.right {
   font-size: 0;
   height: 18rem;
   display: block;
-  background: url('http://i.imgur.com/xhIpUPg.png') center/20rem no-repeat;
+  background: url('http://i.imgur.com/2atwsZP.png') center/20rem no-repeat;
 }
 
 
@@ -222,7 +232,6 @@ aside.right {
   background: rgba(255, 255, 255, 0.15) !important;
   color: rgba(255, 255, 255, 0.75) !important;
 }
-
 
 /* Rosters */
 
@@ -348,7 +357,7 @@ article.main {
   color: #46b0c8;
 }
 
-@media (max-height: 108rem) {
+@media (max-height: 1000px) {
   .team-header,
   .team-row {
     font-size: 1.6rem;

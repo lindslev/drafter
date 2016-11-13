@@ -4,6 +4,8 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import * as draftActions from '../redux/modules/create';
 
+import Header from './header';
+
 class AdminView extends React.Component {
   constructor(props) {
     super(props);
@@ -112,11 +114,14 @@ class AdminView extends React.Component {
 
   render() {
     return (
-      <div className="draft-create-view">
-        <h5 className="view-title">Create a New Draft</h5>
-        {this.renderMiscInputs()}
-        <button className="add-teams" onClick={this.executeAddTeamsFlow}>Add Team Data</button>
-        <button className="create-draft-button"onClick={this.createDraft}>CREATE</button>
+      <div>
+        <Header />
+        <div className="draft-create-view">
+          <h5 className="view-title">Create a New Draft</h5>
+          {this.renderMiscInputs()}
+          <button className="add-teams" onClick={this.executeAddTeamsFlow}>Add Team Data</button>
+          <button className="create-draft-button"onClick={this.createDraft}>CREATE</button>
+        </div>
       </div>
     );
   }

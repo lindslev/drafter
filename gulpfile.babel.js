@@ -16,7 +16,7 @@ const dist = './dist';
 gulp.task('clean', () => del(dist));
 gulp.task('copy', ['clean'], () => (
   gulp.src([
-    `${publicSrc}/**/*.{eot,svg,ttf,woff,woff2,jpg,png,mp4}`
+    `${publicSrc}/**/*.{eot,svg,otf,ttf,woff,woff2,jpg,png,mp4}`
   ])
   .pipe(gulp.dest(dist))
 ));

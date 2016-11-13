@@ -6,13 +6,10 @@ import createStore from './redux/create';
 
 const socket = io();
 
-import Header from './components/header';
-
 class App extends React.Component {
   render() {
     return (
       <div>
-        <Header />
         {this.props.children}
       </div>
     );

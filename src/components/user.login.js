@@ -4,6 +4,8 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import * as userActions from '../redux/modules/user';
 
+import Header from './header';
+
 class UserLoginView extends React.Component {
   constructor(props) {
     super(props);
@@ -56,19 +58,22 @@ class UserLoginView extends React.Component {
     const { usernameToCreate, passwordToCreate,
             usernameToLogin, passwordToLogin } = this.props.userState;
     return (
-      <div className="user-login-view">
-        <div className="row">
-          <div className="col-lg-6">
-            <p>Create Account</p>
-            <input type="text" placeholder="username" value={usernameToCreate} onChange={this.handleValueChange.bind(this, 'usernameToCreate')} />
-            <input type="password" placeholder="password" value={passwordToCreate} onChange={this.handleValueChange.bind(this, 'passwordToCreate')}/>
-            <button onClick={this.createUser}>Create Account</button>
-          </div>
-          <div className="col-lg-6">
-            <p>Log In</p>
-            <input type="text" placeholder="username" value={usernameToLogin} onChange={this.handleValueChange.bind(this, 'usernameToLogin')} />
-            <input type="password" placeholder="password" value={passwordToLogin} onChange={this.handleValueChange.bind(this, 'passwordToLogin')} />
-            <button onClick={this.loginUser}>Log In</button>
+      <div>
+        <Header />
+        <div className="user-login-view">
+          <div className="row">
+            <div className="col-lg-6">
+              <p>Create Account</p>
+              <input type="text" placeholder="username" value={usernameToCreate} onChange={this.handleValueChange.bind(this, 'usernameToCreate')} />
+              <input type="password" placeholder="password" value={passwordToCreate} onChange={this.handleValueChange.bind(this, 'passwordToCreate')}/>
+              <button onClick={this.createUser}>Create Account</button>
+            </div>
+            <div className="col-lg-6">
+              <p>Log In</p>
+              <input type="text" placeholder="username" value={usernameToLogin} onChange={this.handleValueChange.bind(this, 'usernameToLogin')} />
+              <input type="password" placeholder="password" value={passwordToLogin} onChange={this.handleValueChange.bind(this, 'passwordToLogin')} />
+              <button onClick={this.loginUser}>Log In</button>
+            </div>
           </div>
         </div>
       </div>

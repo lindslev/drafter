@@ -14,6 +14,7 @@ class DraftInfo extends React.Component {
     this.renderNom = this.renderNom.bind(this);
     this.renderNominationOrder = this.renderNominationOrder.bind(this);
     this.renderNominationDetails = this.renderNominationDetails.bind(this);
+    this.renderUserInfo = this.renderUserInfo.bind(this);
   }
 
   getCurrentNomination() {
@@ -36,6 +37,23 @@ class DraftInfo extends React.Component {
       }
     });
     return team;
+  }
+
+  renderUserInfo() {
+    const localStorage = window.localStorage || localStorage;
+    const username = localStorage.getItem('drafterUsername');
+    return (
+      <div className="userinfo">
+        {username ?
+          <div className="username">{username}</div>
+          :
+          <a className="username" href="/login">Log In</a>
+        }
+        <div className="prefs">
+          <i className="material-icons">expand_more</i>
+        </div>
+      </div>
+    );
   }
 
   renderAdminControls() {
@@ -81,7 +99,7 @@ class DraftInfo extends React.Component {
     return (
       <div className="draftinfo">
         <div className="inline">
-          <div className="side-text">{48 - (picksLeft - 1)}</div>
+          <div className="side-text">{48 - picksLeft}</div>
           <div className="side-title"> / 48</div>
         </div>
         <div>
@@ -119,7 +137,8 @@ class DraftInfo extends React.Component {
 
     return (
       <aside className="left">
-        {isLoggedIn && isAdmin ? this.renderAdminControls() : null}
+        {this.renderUserInfo()}
+        {/*isLoggedIn && isAdmin ? this.renderAdminControls() : null*/}
         {this.renderBranding()}
         {this.renderNominationDetails()}
         {this.renderNominationOrder()}

@@ -4,6 +4,8 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import * as draftActions from '../redux/modules/edit';
 
+import Header from './header';
+
 class AdminEditView extends React.Component {
   constructor(props) {
     super(props);
@@ -202,15 +204,18 @@ class AdminEditView extends React.Component {
   render() {
     const { teams, players, draft, nominationOrder } = this.props.draftState;
     return (
-      <div className="draft-edit-view">
-        <div className="row">
-          {this.renderTeams(teams)}
-          {this.renderPlayers(players)}
-          {this.renderNominations(nominationOrder)}
-        </div>
-        <div className="row">
-          {this.renderPrivsEditor()}
-          {this.renderDataEditor()}
+      <div>
+        <Header />
+        <div className="draft-edit-view">
+          <div className="row">
+            {this.renderTeams(teams)}
+            {this.renderPlayers(players)}
+            {this.renderNominations(nominationOrder)}
+          </div>
+          <div className="row">
+            {this.renderPrivsEditor()}
+            {this.renderDataEditor()}
+          </div>
         </div>
       </div>
     );
