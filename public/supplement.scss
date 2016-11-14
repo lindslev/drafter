@@ -1,3 +1,10 @@
+.branding-2 {
+  text-align: center;
+  padding: 20px;
+  font-weight: bold;
+}
+
+
 @font-face {
   font-family: 'Source Sans Pro';
   font-style: normal;
@@ -81,17 +88,17 @@ aside.right {
 
 aside.left {
   background: #383d40;
-  width: calc(15% + 10rem);
+  width: calc(10% + 17rem)
 }
 
 article.main {
   background: #e5eaed;
-  width: calc(65% - 19rem);
+  width: calc(80% - 40rem);
 }
 
 aside.right {
   background: #fff;
-  width: calc(20% + 9rem);
+  width: calc(10% + 23rem);
 }
 
 
@@ -236,7 +243,7 @@ aside.left {
 /* Rosters */
 
 article.main {
-  padding: 1.1vh calc(1.1vh + 1.2vw - 1.6rem);
+  padding: 1.1vh;
   box-sizing: border-box;
 }
 
@@ -247,8 +254,8 @@ article.main {
 
 .card {
   display: inline-block;
-  margin: 1.1vh calc(1.1vh + 0.7vw - 1rem);
-  width: calc(100% / 3 - 2*(1.1vh + 0.7vw - 1rem));
+  margin: 1.1vh;
+  width: calc(25% - 2.2vh);
   height: calc(100% - 2.2vh);
   overflow: hidden;
   border-radius: 0.3rem;
@@ -258,8 +265,8 @@ article.main {
 
 .team-header,
 .team-row {
-  padding: 0 calc(0.8vh + 0.8vw - 0.5rem);
-  font-size: 1.5vh;
+  padding: 0 calc(0.8vh + 0.8vw - 0.4rem);
+  font-size: 1.7vh;
 }
 
 .team-header {
@@ -268,8 +275,8 @@ article.main {
   display: -ms-flexbox;
   display: -webkit-flex;
   display: flex;
-  height: calc(16.66667% + 2px);
-  line-height: calc(4.2vh - 2px);
+  height: calc(20% + 2px);
+  line-height: calc(4.5vh + 2px);
   padding-right: calc(0.8vh + 0.8vw - 0.25rem);
   color: #fff;
   font-weight: 700;
@@ -305,8 +312,8 @@ article.main {
 
 .team-row {
   border-top: 2px solid rgba(0, 0, 0, 0.08);
-  height: calc(16.66667% - 2px);
-  line-height: calc(3.8vh - 2px);
+  height: calc(20% - 2px);
+  line-height: calc(4.5vh - 2px);
   box-sizing: initial;
   color: #777;
   font-weight: 600;
@@ -344,7 +351,7 @@ article.main {
 }
 
 .team-row i {
-  font-size: 1.95vh;
+  font-size: 2.1vh;
   color: #909090;
   margin: 1px -0.23vh 0 0;
 }
@@ -360,11 +367,11 @@ article.main {
 @media (max-height: 1000px) {
   .team-header,
   .team-row {
-    font-size: 1.6rem;
+    font-size: 1.8rem;
   }
 
   .team-row i {
-    font-size: 2.1rem;
+    font-size: 2.3rem;
   }
 }
 

@@ -111,7 +111,7 @@ class DraftChat extends React.Component {
       <div className="chat">
         {canChat ? this.renderChatBox(userChatMessage) : null}
         <div className="messages">
-          {stream.map(this.renderChatLineItem)}
+          {stream.slice(0,100).map(this.renderChatLineItem)}
         </div>
       </div>
     );

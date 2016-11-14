@@ -123,7 +123,10 @@ export function createDraft(seasonNumber, teams, tagCoins, keeperCoins, signupSh
   }).then((draft) => {
     draftId = draft.id;
     return addTeamsToDraft(teams, seasonNumber, tagCoins, keeperCoins, legacySheet, draftId);
+  }).catch((err) => {
+    console.log('dsijifjdifjdierr', err);
   }).then(() => {
+    console.log('????');
     return importSignups(signupSheet, numSignups, legacySheet, seasonNumber, draftId);
   }).then(() => {
     const randomize = !(!!manualDraftOrder);
@@ -163,7 +166,7 @@ function addTeamsToDraft(teams, seasonNumber, tagCoinsPerTeam, keeperCoinsForLeg
 function isLegacyTeam(keepers, name) {
   let isLegacy = false;
   keepers.forEach((k) => {
-    if ( k.team.toLowerCase() === name.toLowerCase() ) {
+    if ( (k.team || '').toLowerCase() === (name || 'q').toLowerCase() ) {
       isLegacy = true;
     }
   });
@@ -171,10 +174,10 @@ function isLegacyTeam(keepers, name) {
 }
 
 function findKeeperTeam(keepers, player, seasonNumber) {
-  const playerName = (player[`s11name`]).toLowerCase();
+  const playerName = (player[`s11name`] || '').toLowerCase();
   let teamName;
   keepers.forEach((k) => {
-    const name = (k[`s11name`]).toLowerCase(); // TO DO UNHARDCODE
+    const name = (k[`s11name`] || 'q').toLowerCase(); // TO DO UNHARDCODE
     if ( name === playerName ) {
       teamName = k.team;
     }
@@ -190,14 +193,18 @@ function importSignups(signupSheetId, numSignups, keeperSheetId, seasonNumber, d
 
   return keeperDoc.getSpreadsheet()
     .then((info) => {
+      console.log('wtf');
       return info.worksheets[0].getRows({ offset: 1, limit: 5000, orderby: 'col1' });
     }).then((keeperData) => {
+      console.log('wtf2');
       keepers = keeperData;
       return signupDoc.getSpreadsheet();
     }).then((info) => {
-      return info.worksheets[0].getRows({ offset: 0, limit: 100, orderby: 'col1' });
+      return info.worksheets[0].getRows({ offset: 0, limit: 5000, orderby: 'col1' });
     }).then((signups) => {
+      console.log('wtf3');
       const playerPromises = signups.map((player) => {
+        console.log('player', player);
         let playerTeamId;
         const keeperTeamName = findKeeperTeam(keepers, player, seasonNumber);
         const isEligibleKeeper = !!keeperTeamName;
@@ -207,8 +214,9 @@ function importSignups(signupSheetId, numSignups, keeperSheetId, seasonNumber, d
             playerTeamId = team.id;
           }
         }).then(() => {
+          console.log('???');
           return Player.create({
-            name: player[`s11name`],
+            name: player['Name'] || player['name'],
             current_bid_amount: 0,
             current_bid_team: null,
             keeper_team: playerTeamId,

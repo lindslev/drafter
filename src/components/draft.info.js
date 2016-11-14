@@ -67,9 +67,7 @@ class DraftInfo extends React.Component {
 
   renderBranding() {
     return (
-      <div className="branding">
-        <a href="">MLTP Season 11 Draft</a>
-      </div>
+      <div className="branding-2">NLTP S8 Draft</div>
     );
   }
 
